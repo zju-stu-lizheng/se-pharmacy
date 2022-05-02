@@ -26,7 +26,7 @@ create table `log`(
     foreign key (ano) references administrator(ano)
     )engine=InnoDB default charset= utf8;
 
-create table shoppingCar(
+create table shoppingCart(
 	`user_id` char(10),
 	`medicine_id` char(10),
 	`num` int,
