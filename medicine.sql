@@ -25,3 +25,10 @@ create table `log`(
     `stock` int,
     foreign key (ano) references administrator(ano)
     )engine=InnoDB default charset= utf8;
+
+create table shoppingCart(
+	`user_id` char(10),
+	`medicine_id` char(10),
+	`num` int,
+	primary key(user_id,medicine_id)
+)engine=InnoDB default charset= utf8;
