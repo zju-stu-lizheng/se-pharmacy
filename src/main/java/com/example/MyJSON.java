@@ -23,21 +23,21 @@ public class MyJSON {
 			String opString = obj.get("op").toString();
 			System.out.println(opString);
 			switch (opString) {
-			case "insert":
-				System.out.println("insert");
-				System.out.println("id=" + obj.get("id"));
-				System.out.println("effective_date=" + obj.get("effective_date"));
-				System.out.println("storehouse_id=" + obj.get("storehouse_id"));
-				System.out.println("brand=" + obj.get("brand"));
-				System.out.println("name=" + obj.get("name"));
-				System.out.println("function=" + obj.get("function"));
-				System.out.println("price=" + obj.get("price"));
-				System.out.println("stock=" + obj.get("stock"));
-				break;
-			case "":
+				case "insert":
+					System.out.println("insert");
+					System.out.println("id=" + obj.get("id"));
+					System.out.println("effective_date=" + obj.get("effective_date"));
+					System.out.println("storehouse_id=" + obj.get("storehouse_id"));
+					System.out.println("brand=" + obj.get("brand"));
+					System.out.println("name=" + obj.get("name"));
+					System.out.println("function=" + obj.get("function"));
+					System.out.println("price=" + obj.get("price"));
+					System.out.println("stock=" + obj.get("stock"));
+					break;
+//				case "":
 
-			default:
-				break;
+				default:
+					break;
 			}
 
 		} catch (ParseException pe) {
