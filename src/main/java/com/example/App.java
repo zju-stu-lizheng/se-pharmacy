@@ -3,7 +3,7 @@ package com.example;
 import java.sql.SQLException;
 
 /**
- * Hello world!
+ * 测试MyJDBC
  *
  */
 public class App {

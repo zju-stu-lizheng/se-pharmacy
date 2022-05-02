@@ -1,8 +1,7 @@
+# 软工大程
 
 
-
-
-## 创建数据表
+## 一、创建数据表
 
 ```mysql
 mysql> create database se;
@@ -49,11 +48,20 @@ create table `log`(
     `id` char(10), 
     `effective_date` date,/*YYYY-MM-DD*/
     `storehouse_id` char(2),
-    `stock` int
+    `stock` int,
+    foreign key (ano) references administrator(ano)
     )engine=InnoDB default charset= utf8;
 ```
 
 
+
+
+
+```mysql
+delete from log;
+delete from medicine;
+delete from administrator;
+```
 
 
 
