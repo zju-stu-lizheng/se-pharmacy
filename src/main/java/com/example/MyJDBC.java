@@ -145,8 +145,86 @@ public class MyJDBC {
 
 		return true;
 	}
-
-	
+	/**
+	 * 删除一条药品信息(如不存在，则返回false)
+	 * 
+	 * @param id             : 药品 id
+	 * @param storehouse_id  : 库房 id <char(2)>
+	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
+	 * @param stock          : 药品 库存(入库数量)
+	 * @param ano          	 : 管理员 id
+	 * @return : true(删除成功)/false(删除失败)
+	 */
+	public static boolean deleteMedicine(String id, String storehouse_id, String effective_date, String ano) throws SQLException{
+		String sqlExecutionString = "";
+		String sqlLogString="";
+		ResultSet resultSet;
+		Statement statement;
+		try{
+			// 获取执行sql语句的statement对象
+			statement = connection.createStatement();
+			//查询该药品的库存
+			resultset=statement.executeQuery("SELECT stock FROM medicine WHERE id = \"" + id + "\";");
+			//判断是否存在该药品，若不存在返回false
+			if(!resultset.next()) return false;
+			//记录该药品下架前的库存
+			int stock=Integer.valueOf(resultSet.getString(1));
+			//删除该药品的记录
+			sqlExecutionString = String.format("DELETE FROM medicine WHERE id='%s' AND storehouse_id='%s' AND effective_date='%s';", id,storehouse_id, effective_date);
+			statement.executeUpdate(sqlExecutionString);
+			//添加到日志
+			sqlLogString=String.format("INSERT INTO log VALUES('%s','%s','%s','%s','%s',%d);", ano, "delete", id, effective_date, storehouse_id, stock);
+			statement.executeUpdate(sqlLogString);
+			//两条语句均成功则提交
+			connection.commit();
+		}catch (SQLException e1){
+			e1.printStackTrace();
+			//否则事务回滚
+			connection.rollback();
+			return false;
+		}
+		return true;
+	}
+	/**
+	 * 药品出库(如不存在，则返回false)
+	 * 
+	 * @param id             : 药品 id
+	 * @param storehouse_id  : 库房 id <char(2)>
+	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
+	 * @param num            : 药品 出库数量
+	 * @param ano          	 : 管理员 id
+	 * @return : true(出库成功)/false(出库失败)
+	 */
+	public static boolean deliveryMedicine(String id, String storehouse_id, String effective_date, String ano, int num) throws SQLException{
+		String sqlExecutionString="";
+		String sqlLogString="";
+		ResultSet resultSet;
+		Statement statement;
+		try{
+			// 获取执行sql语句的statement对象
+			statement = connection.createStatement();
+			//查询该药品的库存
+			resultSet=statement.executeQuery("SELECT stock FROM medicine WHERE id = \"" + id + "\";");
+			//判断是否存在该药品，若不存在返回false
+			if(!resultSet.next()) return false;
+			//计算该药品出库后的库存
+			int stock=Integer.valueOf(resultSet.getString(1))-num;
+			//更新该药品库存
+			sqlExecutionString = String.format("UPDATE medicine set stock = %d WHERE id='%s' AND storehouse_id='%s' AND effective_date='%s';", stock, id, storehouse_id, effective_date );
+			statement.executeUpdate(sqlExecutionString);
+			//更新日志
+			sqlLogString=String.format("INSERT INTO log VALUES('%s','%s','%s','%s','%s',%d);", ano, "delivery", id, effective_date, storehouse_id, num);
+			statement.executeUpdate(sqlLogString);
+			//两条语句均成功则提交
+			connection.commit();
+		}catch(SQLException e1){
+			e1.printStackTrace();
+			//否则事务回滚
+			connection.rollback();
+			return false;
+		}
+		return true;
+	}
 	public static void main(String[] args) {
 		connectDatabase();
 //		String ano = "002";
