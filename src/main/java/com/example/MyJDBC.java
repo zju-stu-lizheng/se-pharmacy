@@ -17,8 +17,6 @@ public class MyJDBC {
 	static final String PASSWD = "lizheng";
 
 	static Connection connection = null;
-	private static Statement statement;
-	private static ResultSet resultSet;
 
 	/**
 	 * 连接JDBC数据库
@@ -52,6 +50,8 @@ public class MyJDBC {
 	 */
 	public static boolean ensureLogin(String ano, String passwd) {
 		String pwd = null;
+		Statement statement;
+		ResultSet resultSet;
 		try {
 			// 获取执行sql语句的statement对象
 			statement = connection.createStatement();
@@ -82,13 +82,14 @@ public class MyJDBC {
 	/**
 	 * 插入一条管理员信息
 	 * 
-	 * @param ano:            管理员 id
-	 * @param aname：管理员       昵称
-	 * @param password：管理员    密码
-	 * @param phonenumber：管理员 联系方式
+	 * @param ano         : 管理员 id
+	 * @param aname       : 管理员 昵称
+	 * @param password    : 管理员 密码
+	 * @param phonenumber : 管理员 联系方式
 	 * @return : true(插入成功)/false(插入失败)
 	 */
 	public static boolean insertAdministator(String ano, String aname, String password, String phonenumber) {
+		Statement statement;
 		try {
 			statement = connection.createStatement();
 			statement.executeUpdate("INSERT INTO administrator" + " VALUES('" + ano + "','" + aname + "','" + password
@@ -104,40 +105,61 @@ public class MyJDBC {
 	}
 
 	/**
-	 * 插入一条药品信息(如存在该药品，则在库存基础上增加stock)
+	 * 插入一条药品信息
 	 * 
 	 * @param id             : 药品 id
+	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
 	 * @param storehouse_id  : 库房 id <char(2)>
+	 * @param brand          : 药品 厂商
 	 * @param name           : 药品 名字
 	 * @param function       : 药品 作用
-	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
 	 * @param price          : 药品 单价
 	 * @param stock          : 药品 库存(入库数量)
 	 * @return : true(插入成功)/false(插入失败)
 	 */
-	public static boolean insertMedicine(String id, String storehouse_id, String name, String function,
-			String effective_date, float price, int stock) {
+	public static boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand,
+			String name, String function, float price, int stock) {
+		Statement statement;
+		String sqlExecutionString = "";
+		try {
+			// insert into database
+			sqlExecutionString = String.format("INSERT INTO medicine VALUES('%s','%s','%s','%s','%s','%s',%f,%d);", id,
+					effective_date, storehouse_id, brand, name, function, price, stock);
+			statement = connection.createStatement();
+			statement.executeUpdate(sqlExecutionString);
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public static boolean addMedicine(String id, String effective_date, String storehouse_id, int stock) {
 		int remainStock = 0;
-		String sqlExectionString = "";
+		Statement statement;
+		ResultSet resultSet;
+		String sqlExecutionString = "";
 		// 获取执行sql语句的statement对象
 		try {
 			statement = connection.createStatement();
 			// 执行sql语句,拿到结果集
-			resultSet = statement.executeQuery("SELECT stock FROM medicine Where id = \"" + id + "\";");
+			sqlExecutionString = String.format(
+					"SELECT stock FROM medicine where id = '%s' and effective_date = '%s' and storehouse_id = '%s';",
+					id, effective_date, storehouse_id);
+			resultSet = statement.executeQuery(sqlExecutionString);
 			// 遍历结果集，得到数据
 			if (resultSet.next()) {
 				remainStock = Integer.valueOf(resultSet.getString(1));
 				// update database
 				stock += remainStock;
-				sqlExectionString = String.format("UPDATE medicine set stock = %d where id = %s;", stock, id);
-				
+				sqlExecutionString = String.format(
+						"UPDATE medicine set stock = %d where id = '%s' and effective_date = '%s' and storehouse_id = '%s';",
+						stock, id, effective_date, storehouse_id);
 			} else {
-				// insert into database
-				sqlExectionString = String.format("INSERT INTO medicine VALUES('%s','%s','%s','%s','%s',%f,%d);", id,
-						storehouse_id, name, function, effective_date, price, stock);
+				return false;
 			}
 			statement = connection.createStatement();
-			statement.executeUpdate(sqlExectionString);
+			statement.executeUpdate(sqlExecutionString);
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 			return false;
@@ -146,7 +168,39 @@ public class MyJDBC {
 		return true;
 	}
 
-	
+	// To do list: 1. 删除药品 2. 查询药品,返回csv格式的string
+
+	/**
+	 * 查询所有药品记录
+	 * @return : csv格式的药品记录
+	 */
+	public static String queryMedicine() {
+		String sqlExecutionString = "select * from medicine;";
+		StringBuffer queryResultBuffer = new StringBuffer();
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlExecutionString);
+			while (rs.next()) {
+				/*根据 属性获取该条记录相应的值*/
+				String id = rs.getString("id");
+				String effective_date = rs.getString("effective_date");
+				String storehouse_id = rs.getString("storehouse_id");
+				String brandString = rs.getString("brand");
+				String name = rs.getString("name");
+				String function = rs.getString("function");
+				float price = rs.getFloat("price");
+				int stock = rs.getInt("stock");
+				
+				String tmpString = id + "," + effective_date + "," + storehouse_id + "," + brandString + "," + name
+						+ "," + function + "," + price + "," + stock + "\n";
+				queryResultBuffer.append(tmpString);
+//				System.out.print(tmpString);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return queryResultBuffer.toString();
+	}
+
 	public static void main(String[] args) {
 		connectDatabase();
 //		String ano = "002";
@@ -156,16 +210,19 @@ public class MyJDBC {
 //		insertAdministator(ano,aname,password,phonenumber);
 
 //		String id = "001";
-//		String storeString = "1";
+//		String effString = "2022-05-24";
+//		String storeString = "2";
+//		String brandString = "国药";
 //		String name = "阿司匹林";
 //		String function = "解热镇痛";
-//		String effString = "2022-05-22";
+//		
 //		float price = 25.0f;
 //		int stock = 20;
-//		insertMedicine(id, storeString, name, function, effString, price, stock);
+//		insertMedicine(id, effString, storeString,brandString, name, function, price, stock);
 
-		System.out.println(ensureLogin("001", "lz"));
-		System.out.println(ensureLogin("002", "yp"));
+//		System.out.println(ensureLogin("001", "lz"));
+//		System.out.println(ensureLogin("002", "yp"));
+		System.out.print(queryMedicine());
 	}
 
 }

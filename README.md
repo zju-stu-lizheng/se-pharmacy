@@ -14,19 +14,22 @@ Database changed
 
 
 
+![image-20220502172252083](https://s2.loli.net/2022/05/02/9ayOUQwqpgS2khN.png)
+
 ```sql
 create table `medicine`( 
     `id` char(10), 
+    `effective_date` date,/*YYYY-MM-DD*/
     `storehouse_id` char(2),
+    `brand` varchar(100),
     `name` varchar(100), 
     `function` varchar(100),
-    `effective_date` date,
     `price` float,
     `stock` int,
-    primary key(id))engine=InnoDB default charset= utf8;
+    primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;
 ```
 
-![image-20220502124355036](https://s2.loli.net/2022/05/02/e5hkFTIcYbfLVo3.png)
+
 
 ```sql
 create table `administrator`( 
@@ -38,3 +41,22 @@ create table `administrator`(
 ```
 
 
+
+```sql
+create table `log`( 
+    `ano` char(10),
+    `option` char(100),
+    `id` char(10), 
+    `effective_date` date,/*YYYY-MM-DD*/
+    `storehouse_id` char(2),
+    `stock` int
+    )engine=InnoDB default charset= utf8;
+```
+
+
+
+
+
+> Others:
+
+**Eclipse**中**格式化代码的快捷键**是Ctrl+Shift+F
