@@ -177,8 +177,7 @@ public class MyJDBC {
 	 * @param stock          : 药品 库存(入库数量)
 	 * @return : true(删除成功)/false(删除失败)
 	 */
-	public boolean deleteMedicine(String id, String storehouse_id, String effective_date)
-			throws SQLException {
+	public boolean deleteMedicine(String id, String storehouse_id, String effective_date) throws SQLException {
 		String sqlExecutionString = "";
 		String sqlLogString = "";
 		ResultSet resultSet;
@@ -200,8 +199,7 @@ public class MyJDBC {
 			statement.executeUpdate(sqlExecutionString);
 			// 添加到日志
 			sqlLogString = String.format("INSERT INTO log VALUES('%s','%s','%s','%s','%s',%d);", anoString, "delete",
-					id,
-					effective_date, storehouse_id, stock);
+					id, effective_date, storehouse_id, stock);
 			statement.executeUpdate(sqlLogString);
 			// 两条语句均成功则提交
 			connection.commit();
@@ -246,8 +244,7 @@ public class MyJDBC {
 			statement.executeUpdate(sqlExecutionString);
 			// 更新日志
 			sqlLogString = String.format("INSERT INTO log VALUES('%s','%s','%s','%s','%s',%d);", anoString, "delivery",
-					id,
-					effective_date, storehouse_id, num);
+					id, effective_date, storehouse_id, num);
 			statement.executeUpdate(sqlLogString);
 			// 两条语句均成功则提交
 			connection.commit();
@@ -346,24 +343,33 @@ public class MyJDBC {
 		return queryResultBuffer.toString();
 	}
 
-	public boolean addShoppingCart(String user_id, String medicine_id, int num) throws SQLException {
+	public boolean addShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
+			throws SQLException {
 		String sqlExecutionString = "";
 		ResultSet resultSet;
 		Statement statement;
 		try {
 			// 获取执行sql语句的statement对象
 			statement = connection.createStatement();
+			sqlExecutionString = String.format(
+					"SELECT SUM(stock) FROM medicine WHERE id = '%s' AND storehouse_id = '%s' GROUP BY id;",
+					medicine_id, storehouse_id);
 			// 查询该药品的库存
-			resultSet = statement.executeQuery(
-					String.format("SELECT SUM(stock) FROM medicine WHERE id = '%s' GROUP BY id;", medicine_id));
+			resultSet = statement.executeQuery(sqlExecutionString);
+			System.out.println(sqlExecutionString);
 			// 判断是否存在该药品，若不存在返回false
-			if (!resultSet.next())
+			if (!resultSet.next()) {
 				return false;
+			}else {
+				if(resultSet.getString(1) == null)
+					return false;
+			}
 			// 记录该药品当前的库存
 			int stock = Integer.valueOf(resultSet.getString(1));
 			// 查询购物车中是否已经有该药品
 			resultSet = statement.executeQuery(String.format(
-					"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s';", medicine_id, user_id));
+					"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s';",
+					medicine_id, user_id, storehouse_id));
 			// 判断是否存在该药品
 			if (resultSet.next()) {
 				// 更新num
@@ -373,16 +379,16 @@ public class MyJDBC {
 					return false;
 				// 更新购物车的记录
 				sqlExecutionString = String.format(
-						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s';", num, user_id,
-						medicine_id);
+						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id = '%s';",
+						num, user_id, medicine_id, storehouse_id);
 				statement.executeUpdate(sqlExecutionString);
 			} else {
 				// 如果购物车数量大于库存，返回false
 				if (stock < num)
 					return false;
 				// 将记录插入到购物车表中
-				sqlExecutionString = String.format("INSERT INTO shoppingCart VALUES('%s','%s', %d);", user_id,
-						medicine_id, num);
+				sqlExecutionString = String.format("INSERT INTO shoppingCart VALUES('%s','%s', %d,'%s');", user_id,
+						medicine_id, num, storehouse_id);
 				statement.executeUpdate(sqlExecutionString);
 			}
 			// 成功则提交
@@ -396,7 +402,8 @@ public class MyJDBC {
 		return true;
 	}
 
-	public boolean deleteShoppingCart(String user_id, String medicine_id, int num) throws SQLException {
+	public boolean deleteShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
+			throws SQLException {
 		String sqlExecutionString = "";
 		ResultSet resultSet;
 		Statement statement;
@@ -405,7 +412,8 @@ public class MyJDBC {
 			statement = connection.createStatement();
 			// 查询该药品的在购物车中的数量
 			resultSet = statement.executeQuery(String.format(
-					"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s';", medicine_id, user_id));
+					"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s';",
+					medicine_id, user_id, storehouse_id));
 			// 判断是否存在该药品，若不存在返回false
 			if (!resultSet.next())
 				return false;
@@ -417,14 +425,15 @@ public class MyJDBC {
 			num = oldnum - num;
 			if (num == 0) {
 				// 将记录从购物车表中删除
-				sqlExecutionString = String.format("DELETE FROM shoppingCart WHERE user_id='%s' AND medicine_id='%s';",
-						user_id, medicine_id);
+				sqlExecutionString = String.format(
+						"DELETE FROM shoppingCart WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id='%s';",
+						user_id, medicine_id, storehouse_id);
 				statement.executeUpdate(sqlExecutionString);
 			} else {
 				// 将记录更新
 				sqlExecutionString = String.format(
-						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine='%s';", num, user_id,
-						medicine_id);
+						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine='%s' AND storehouse_id = '%s';",
+						num, user_id, medicine_id, storehouse_id);
 				statement.executeUpdate(sqlExecutionString);
 			}
 			// 成功则提交
@@ -438,19 +447,25 @@ public class MyJDBC {
 		return true;
 	}
 
-	public float getPrice(String user_id) {
+	public float getPrice(String user_id, String storehouse_id) {
 		float sum;
 		ResultSet resultSet;
 		Statement statement;
 		try {
 			statement = connection.createStatement();
 			resultSet = statement.executeQuery(String.format(
-					"SELECT SUM(medicine.price*shoppingCart.num) FROM shoppingCart JOIN medicine WHERE user_id ='%s' AND shoppingCart.medicine_id=medicine.id;",
-					user_id));
-			if (!resultSet.next())
+					"SELECT SUM(medicine.price*shoppingCart.num) FROM shoppingCart NATURAL JOIN medicine WHERE user_id ='%s' AND storehouse_id = '%s' AND shoppingCart.medicine_id=medicine.id;",
+					user_id, storehouse_id));
+			if (!resultSet.next()) {
 				return 0.0f;
-			else
-				sum = Float.valueOf(resultSet.getString(1));
+			}
+			else {
+				if(resultSet.getString(1) != null)
+					sum = Float.valueOf(resultSet.getString(1));
+				else {
+					return 0.0f;
+				}
+			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 			return 0.0f;

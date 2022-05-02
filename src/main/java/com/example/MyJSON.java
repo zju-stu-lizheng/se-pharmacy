@@ -34,7 +34,8 @@ public class MyJSON {
 					System.out.println("price=" + obj.get("price"));
 					System.out.println("stock=" + obj.get("stock"));
 					break;
-//				case "":
+				case "add":
+					
 
 				default:
 					break;

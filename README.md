@@ -58,7 +58,8 @@ create table shoppingCart(
 	`user_id` char(10),
 	`medicine_id` char(10),
 	`num` int,
-	primary key(user_id,medicine_id)
+    `storehouse_id` char(2),
+	primary key(user_id,medicine_id,storehouse_id)
 )engine=InnoDB default charset= utf8;
 ```
 
@@ -70,6 +71,7 @@ create table shoppingCart(
 delete from log;
 delete from medicine;
 delete from administrator;
+delete from shoppingCart;
 ```
 
 ## 二、数据包格式
