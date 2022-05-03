@@ -1,6 +1,7 @@
 package com.example;
 import java.util.ArrayList;
 import java.util.*;
+
 class MedicineBillEntry{
     String medicine_id;
     int num;
@@ -13,6 +14,7 @@ class MedicineBillEntry{
         this.storehouse_id=storehouse_id;
     }
 }
+
 class MedicineBill{
     String user_id;
     int sequence_num;
@@ -23,6 +25,7 @@ class MedicineBill{
         this.bill=bill;
     }
 }
+
 public class MyWindows{
     Vector <Double>windows=new Vector <Double>();
     Vector <Vector <Integer>>queue=new Vector <Vector<Integer>>();

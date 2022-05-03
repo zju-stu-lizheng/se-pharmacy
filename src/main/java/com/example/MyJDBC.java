@@ -5,6 +5,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+
+import com.mysql.cj.exceptions.RSAException;
 
 public class MyJDBC {
 
@@ -361,7 +364,7 @@ public class MyJDBC {
 	 * @return : csv格式的药品记录
 	 */
 	public String queryShoppingCart(String user_id) {
-		String sqlExecutionString = String.format("select * from shoppingCart where user_id = %s;", user_id);
+		String sqlExecutionString = String.format("select * from shoppingCart where user_id = '%s';", user_id);
 		StringBuffer queryResultBuffer = new StringBuffer();
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlExecutionString);
@@ -379,6 +382,39 @@ public class MyJDBC {
 			e.printStackTrace();
 		}
 		return queryResultBuffer.toString();
+	}
+
+	// To do list: 根据有效日期和购物车中药品,返回一个ArrayList<MedicineBillEntry> bill;
+	public ArrayList<MedicineBillEntry> getBillEntries(String user_id) {
+		ArrayList<MedicineBillEntry> list = new ArrayList<MedicineBillEntry>();
+		ResultSet rs;
+		// 从购物车中搜索得到该用户需要买的药
+		String sqlExecutionString = String.format("select * from shoppingCart where user_id = '%s';", user_id);
+		try (Statement stmt = connection.createStatement()) {
+			rs = stmt.executeQuery(sqlExecutionString);
+			while (rs.next()) {
+				/* 根据 属性获取该条记录相应的值 */
+				String medicine_id = rs.getString("medicine_id");
+				String storehouse_id = rs.getString("storehouse_id");
+				int num = rs.getInt("num");
+
+				// 针对每一种药,从所有药品中挑选出保质期最短的药品
+				sqlExecutionString = String.format(
+						"select brand,effective_date from medicine where id = '%s' AND storehouse_id = '%s' ORDER BY effective_date ASC;",
+						medicine_id, storehouse_id);
+				rs = stmt.executeQuery(sqlExecutionString);
+				rs.next();
+				/* 根据 属性获取该条记录相应的值 */
+				String brand = rs.getString("brand");
+				String effective_date = rs.getString("effective_date");
+				MedicineBillEntry tmpBillEntry = new MedicineBillEntry(medicine_id, num, brand, storehouse_id);
+				list.add(tmpBillEntry);
+			}
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return list;
 	}
 
 	public boolean addShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)

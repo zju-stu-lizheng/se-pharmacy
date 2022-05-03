@@ -79,9 +79,10 @@ public class MyJSON {
 		System.out.println(obj);
 		return medicineList;
 	}
-	
+
 	/**
 	 * 收到query数据包，查询该用户购物车内所有药品
+	 * 
 	 * @param user_id : 用户 id
 	 * @return
 	 */
@@ -97,13 +98,14 @@ public class MyJSON {
 		System.out.println(obj);
 		return medicineList;
 	}
-	
+
 	/**
 	 * 收到insert数据包，往购物车中添加一条记录
-	 * @param user_id : 用户 id
-	 * @param medicine_id : 药品 id
-	 * @param storehouse_id : 药房 id 
-	 * @param num : 购买数量
+	 * 
+	 * @param user_id       : 用户 id
+	 * @param medicine_id   : 药品 id
+	 * @param storehouse_id : 药房 id
+	 * @param num           : 购买数量
 	 */
 	public static void insertShoppingCartOperate(String user_id, String medicine_id, String storehouse_id, int num) {
 		MyJDBC conJdbc = new MyJDBC();
@@ -113,7 +115,7 @@ public class MyJSON {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		/* 发送一个json包 */
 		JSONObject obj = new JSONObject();
 
@@ -140,9 +142,9 @@ public class MyJSON {
 			System.out.print("op is ");
 			opString = obj.get("op").toString();
 			System.out.println(opString);
-			String ano, id, effective_date, storehouse_id, brand, name, function,user_id,medicine_id;
+			String ano, id, effective_date, storehouse_id, brand, name, function, user_id, medicine_id;
 			float price;
-			int stock,num;
+			int stock, num;
 
 			switch (opString) {
 			case "insert_medicine":
@@ -186,7 +188,7 @@ public class MyJSON {
 				medicine_id = obj.get("medicine_id").toString();
 				storehouse_id = obj.get("storehouse_id").toString();
 				num = Integer.valueOf(obj.get("num").toString());
-				
+
 				/* 解析得到加入购物车操作 */
 				insertShoppingCartOperate(user_id, medicine_id, storehouse_id, num);
 				break;
@@ -201,51 +203,59 @@ public class MyJSON {
 		return retString.toString();
 	}
 
+	private static String insertMedicineString = "{\r\n" + "    \"op\" : \"insert_medicine\",	\r\n"
+			+ "    \"ano\" : \"%s\",		\r\n" + "    \"id\" : \"%s\",		\r\n"
+			+ "    \"storehouse_id\" : \"%s\",			\r\n" + "    \"effective_date\" : \"%s\", \r\n"
+			+ "    \"brand\" : \"%s\",				  \r\n" + "    \"name\" : \"%s\",			\r\n"
+			+ "    \"function\" : \"%s\",		\r\n" + "    \"price\" : %f,				  \r\n"
+			+ "    \"stock\" : %d				 \r\n" + "}";
+
 	public static void main(String[] args) {
 		MyJDBC.connectDatabase();
 
-		String insertMedicine1 = "{\r\n" + "    \"op\" : \"insert_medicine\",	\r\n" + "    \"ano\" : \"001\",		\r\n"
-				+ "    \"id\" : \"001\",		\r\n" + "    \"storehouse_id\" : \"01\",			\r\n"
-				+ "    \"effective_date\" : \"2022-05-23\", \r\n" + "    \"brand\" : \"国药\",				  \r\n"
-				+ "    \"name\" : \"阿司匹林\",			\r\n" + "    \"function\" : \"解热镇痛\",		\r\n"
-				+ "    \"price\" : 25.0,				  \r\n" + "    \"stock\" : 25				 \r\n" + "}";
-		
-		String insertMedicine2 = "{\r\n" + "    \"op\" : \"insert_medicine\",	\r\n" + "    \"ano\" : \"001\",		\r\n"
-				+ "    \"id\" : \"002\",		\r\n" + "    \"storehouse_id\" : \"01\",			\r\n"
-				+ "    \"effective_date\" : \"2022-05-23\", \r\n" + "    \"brand\" : \"国药\",				  \r\n"
-				+ "    \"name\" : \"头孢\",			\r\n" + "    \"function\" : \"头孢就酒，越喝越勇\",		\r\n"
-				+ "    \"price\" : 25.0,				  \r\n" + "    \"stock\" : 25				 \r\n" + "}";
+		String id = "001";
+		String effString = "2022-05-25";
+		String storeString = "1";
+		String brandString = "国药";
+		String name = "阿司匹林";
+		String function = "解热镇痛";
+		float price = 25.0f;
+		int stock = 20;
+		String insertMedicine1 = String.format(insertMedicineString, id, effString, storeString, brandString, name,
+				function, price, stock);
+
+		id = "002";
+		effString = "2022-05-30";
+		storeString = "1";
+		brandString = "国药";
+		name = "头孢";
+		function = "头孢就酒，越喝越勇";
+		price = 24.0f;
+		stock = 10;
+		String insertMedicine2 = String.format(insertMedicineString, id, effString, storeString, brandString, name,
+				function, price, stock);
 
 		String s2 = "{\r\n" + "    \"op\" : \"delete_medicine\",	\r\n" + "    \"ano\" : \"001\",\r\n"
 				+ "    \"id\" : \"001\",		\r\n" + "    \"storehouse_id\" : \"01\",			\r\n"
 				+ "    \"effective_date\" : \"2022-05-23\"	\r\n" + "}";
 
 		String s3 = "{\r\n" + "    \"op\" : \"query_medicine\",	\r\n" + "    \"ano\" : \"001\"\r\n" + "}";
-		
-		String s4 = "{\r\n"
-				+ "    \"op\" : \"insert_shoppingCart\",	\r\n"
-				+ "    \"user_id\" : \"001\",\r\n"
-				+ "    \"medicine_id\" : \"001\",\r\n"
-				+ "    \"storehouse_id\" : \"01\",\r\n"
-				+ "    \"num\" : 5\r\n"
-				+ "}";
-		
-		String s5 = "{\r\n"
-				+ "    \"op\" : \"insert_shoppingCart\",	\r\n"
-				+ "    \"user_id\" : \"001\",\r\n"
-				+ "    \"medicine_id\" : \"002\",\r\n"
-				+ "    \"storehouse_id\" : \"01\",\r\n"
-				+ "    \"num\" : 3\r\n"
-				+ "}";
-		
-		String queryShoppingString = "{\r\n"
-				+ "    \"op\" : \"query_shoppingCart\",	\r\n"
-				+ "    \"user_id\" : \"001\"\r\n"
+
+		String s4 = "{\r\n" + "    \"op\" : \"insert_shoppingCart\",	\r\n" + "    \"user_id\" : \"001\",\r\n"
+				+ "    \"medicine_id\" : \"001\",\r\n" + "    \"storehouse_id\" : \"01\",\r\n" + "    \"num\" : 5\r\n"
 				+ "}";
 
+		String s5 = "{\r\n" + "    \"op\" : \"insert_shoppingCart\",	\r\n" + "    \"user_id\" : \"001\",\r\n"
+				+ "    \"medicine_id\" : \"002\",\r\n" + "    \"storehouse_id\" : \"01\",\r\n" + "    \"num\" : 3\r\n"
+				+ "}";
+
+		String queryShoppingString = "{\r\n" + "    \"op\" : \"query_shoppingCart\",	\r\n"
+				+ "    \"user_id\" : \"001\"\r\n" + "}";
+
+		System.out.println(jsonParser(insertMedicine1));
 		System.out.println(jsonParser(insertMedicine2));
 		System.out.println(jsonParser(s3));
-		
+
 		System.out.println(jsonParser(s4));
 		System.out.println(jsonParser(s5));
 		System.out.println(jsonParser(queryShoppingString));
