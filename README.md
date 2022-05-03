@@ -65,7 +65,7 @@ create table shoppingCart(
 
 
 
-
+### 清空表格操作
 
 ```mysql
 delete from log;
@@ -74,38 +74,116 @@ delete from administrator;
 delete from shoppingCart;
 ```
 
+
+
+
+
 ## 二、数据包格式
+
+### 管理员 -> 药房
 
 * 入库一种药品，相当于数据库`medicine`表项增加一项
 
 ```json
 {
-    "op" : "insert",	// insert medicial option
-    "id" : "001",	// char(10)
-    "effective_date" : "2022-05-23",	//YYYY-MM-DD
-    "storehouse_id" : "01",			//char(2)
-    "brand" : "国药",					//char(100)
+    "op" : "insert_medicine",	// insert medicial option
+    "ano" : "001",		//char(10),管理员id
+    "id" : "001",		// char(10),药品id
+    "storehouse_id" : "01",			//char(2),药房id
+    "effective_date" : "2022-05-23", //YYYY-MM-DD
+    "brand" : "国药",				  //char(100)
     "name" : "阿司匹林",			//char(100)
     "function" : "解热镇痛",		//char(100)
-    "price" : 25.0,				//float
-    "stock" : 25				//int
+    "price" : 25.0,				  //float
+    "stock" : 25				 //int
 }
 ```
 
-* 在已入库的基础上，进行增加药品数量操作
+* 删除一条药品信息
 
-```
+```json
 {
-    "op" : "add",	// insert medicial option
-    "id" : "001",	// char(10)
-    "effective_date" : "2022-05-23",	//YYYY-MM-DD
+    "op" : "delete_medicine",	
+    "ano" : "001",
+    "id" : "001",		// char(10)
     "storehouse_id" : "01",			//char(2)
-    "brand" : "国药",					//char(100)
-    "name" : "阿司匹林",			//char(100)
-    "function" : "解热镇痛",		//char(100)
-    "price" : 25.0,				//float
-    "stock" : 25				//int
+    "effective_date" : "2022-05-23"	//YYYY-MM-DD
 }
+```
+
+* 查询药品信息
+  * 需要告知管理员id（是谁进行查询）
+
+
+```json
+{
+    "op" : "query_medicine",	
+    "ano" : "001"
+}
+```
+
+### 药房 -> 管理员
+
+* 出入库的返回包
+  * response 是 boolean 型变量, true/false
+
+```json
+{
+	"op" : "ret_update",
+	"response" : true
+}
+```
+
+* 查询药品的返回包
+  * 以`csv`格式返回药品信息。
+
+```json
+{
+	"op" : "ret_query",
+	"medicine_list" : "001,2022-05-23,01,国药,阿司匹林,解热镇痛,25.0,25\n"
+}
+```
+
+### 患者 -> 药房
+
+* 查询购物车中的药品清单
+
+```json
+{
+    "op" : "query_shoppingCart",	
+    "user_id" : "001"
+}
+```
+
+* 加入购物车操作
+  * String user_id : 用户 id
+  * String medicine_id : 药品 id
+  * String storehouse_id : 药房 id
+  * int num ：数量
+
+````json
+{
+    "op" : "insert_shoppingCart",	
+    "user_id" : "001",
+    "medicine_id" : "001",
+    "storehouse_id" : "01",
+    "num" : 5
+}
+````
+
+### 药房 -> 患者
+
+* 加入购物车的返回包
+
+```json
+{"op":"ret_update","response":true}
+```
+
+* 查询购物车返回包
+  * 以 csv 格式返回，每行记录格式为`(medicine_id,storehouse_id,num)`
+
+```json
+{"op":"ret_query","medicine_list":"001,01,5\n"}
 ```
 
 
@@ -114,6 +192,6 @@ delete from shoppingCart;
 
 > Others:
 
-* **Eclipse**中**格式化代码的快捷键**是Ctrl+Shift+F
+* **Eclipse**中**格式化代码的快捷键**是 Ctrl+Shift+F
 
 * `git pull` 之前请先`git add.` && `git commit -m "your commit"`

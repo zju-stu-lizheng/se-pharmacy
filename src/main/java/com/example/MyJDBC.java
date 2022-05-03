@@ -18,6 +18,7 @@ public class MyJDBC {
 
 	static Connection connection = null;
 	String anoString;
+	Boolean isAdministrator;
 
 	/**
 	 * 构造函数，每一个管理员新建一个对象
@@ -25,7 +26,15 @@ public class MyJDBC {
 	 * @param ano : 管理员 id
 	 */
 	public MyJDBC(String ano) {
+		isAdministrator = true;
 		anoString = ano;
+	}
+
+	/**
+	 * 构造函数，为用户新建一个对象
+	 */
+	public MyJDBC() {
+		isAdministrator = false;
 	}
 
 	/**
@@ -41,7 +50,9 @@ public class MyJDBC {
 
 		// 获取与数据库连接的对象-Connetcion
 		try {
-			connection = DriverManager.getConnection(DB_URL, USERNAME, PASSWD);
+			// 如果是关闭状态，则打开
+			if (connection == null)
+				connection = DriverManager.getConnection(DB_URL, USERNAME, PASSWD);
 			if (!connection.isClosed())
 				System.out.println("Succeeded connecting to the Database!");
 			// Set auto commit as false.
@@ -343,6 +354,33 @@ public class MyJDBC {
 		return queryResultBuffer.toString();
 	}
 
+	/**
+	 * 查询目标用户购物车中的药品列表
+	 * 
+	 * @param user_id : 用户 id
+	 * @return : csv格式的药品记录
+	 */
+	public String queryShoppingCart(String user_id) {
+		String sqlExecutionString = String.format("select * from shoppingCart where user_id = %s;", user_id);
+		StringBuffer queryResultBuffer = new StringBuffer();
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlExecutionString);
+			while (rs.next()) {
+				/* 根据 属性获取该条记录相应的值 */
+				String medicine_id = rs.getString("medicine_id");
+				String storehouse_id = rs.getString("storehouse_id");
+				int num = rs.getInt("num");
+
+				String tmpString = medicine_id + "," + storehouse_id + "," + num + "\n";
+				/* 将每条记录添加入 buffer */
+				queryResultBuffer.append(tmpString);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return queryResultBuffer.toString();
+	}
+
 	public boolean addShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
 			throws SQLException {
 		String sqlExecutionString = "";
@@ -356,12 +394,12 @@ public class MyJDBC {
 					medicine_id, storehouse_id);
 			// 查询该药品的库存
 			resultSet = statement.executeQuery(sqlExecutionString);
-			System.out.println(sqlExecutionString);
+//			System.out.println(sqlExecutionString);
 			// 判断是否存在该药品，若不存在返回false
 			if (!resultSet.next()) {
 				return false;
-			}else {
-				if(resultSet.getString(1) == null)
+			} else {
+				if (resultSet.getString(1) == null)
 					return false;
 			}
 			// 记录该药品当前的库存
@@ -458,9 +496,8 @@ public class MyJDBC {
 					user_id, storehouse_id));
 			if (!resultSet.next()) {
 				return 0.0f;
-			}
-			else {
-				if(resultSet.getString(1) != null)
+			} else {
+				if (resultSet.getString(1) != null)
 					sum = Float.valueOf(resultSet.getString(1));
 				else {
 					return 0.0f;
