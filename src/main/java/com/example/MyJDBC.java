@@ -407,10 +407,11 @@ public class MyJDBC {
 				/* 根据 属性获取该条记录相应的值 */
 				String brand = rs.getString("brand");
 				String effective_date = rs.getString("effective_date");
-				MedicineBillEntry tmpBillEntry = new MedicineBillEntry(medicine_id, num, brand, storehouse_id);
+				MedicineBillEntry tmpBillEntry = new MedicineBillEntry(medicine_id, num, brand, storehouse_id,effective_date);
 				list.add(tmpBillEntry);
 			}
 			rs.close();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

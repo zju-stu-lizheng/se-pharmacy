@@ -7,11 +7,13 @@ class MedicineBillEntry{
     int num;
     String brand;
     String storehouse_id;
-    public MedicineBillEntry(String medicine_id, int num, String brand, String storehouse_id){
+    String effective_date;
+    public MedicineBillEntry(String medicine_id, int num, String brand, String storehouse_id,String effective_date){
         this.medicine_id=medicine_id;
         this.num=num;
         this.brand=brand;
         this.storehouse_id=storehouse_id;
+        this.effective_date = effective_date;
     }
 }
 
