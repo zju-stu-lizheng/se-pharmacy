@@ -13,11 +13,11 @@ public class App {
 		MyJDBC.connectDatabase();
 
 		/* test for insert administator */
-//		String ano = "001";
-//		String aname = "lizheng";
-//		String password = "yp";
-//		String phonenumber = "123456";
-//		conJdbc.insertAdministator(ano, aname, password, phonenumber);
+		String ano = "001";
+		String aname = "lizheng";
+		String password = "yp";
+		String phonenumber = "123456";
+		conJdbc.insertAdministator(ano, aname, password, phonenumber);
 
 		/* test for insert Medicine */
 //		System.out.println("test for insert Medicine");
@@ -78,23 +78,23 @@ public class App {
 		// }
 
 		/* test for addShoppingCart */
-		System.out.println("test for addShoppingCart");
-		try {
-			if(conJdbc.addShoppingCart("001", "001", "1", 2)) {
-				System.out.println("add1 success");
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		System.out.println("test for addShoppingCart 2");
-		try {
-			conJdbc.addShoppingCart("001", "002", "1", 3);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println("Total Price for 1 is " + conJdbc.getPrice("001", "1"));
-		System.out.println("Total Price for 2 is " + conJdbc.getPrice("001", "2"));
+//		System.out.println("test for addShoppingCart");
+//		try {
+//			if(conJdbc.addShoppingCart("001", "001", "1", 2)) {
+//				System.out.println("add1 success");
+//			}
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		System.out.println("test for addShoppingCart 2");
+//		try {
+//			conJdbc.addShoppingCart("001", "002", "1", 3);
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//
+//		System.out.println("Total Price for 1 is " + conJdbc.getPrice("001", "1"));
+//		System.out.println("Total Price for 2 is " + conJdbc.getPrice("001", "2"));
 
 		/* test for deleteShoppingCart */
 //		System.out.println("test for deleteShoppingCart");
