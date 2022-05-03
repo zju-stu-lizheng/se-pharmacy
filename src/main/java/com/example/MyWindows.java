@@ -13,13 +13,25 @@ class MedicineBillEntry{
         this.storehouse_id=storehouse_id;
     }
 }
+class MedicineBill{
+    String user_id;
+    int sequence_num;
+    ArrayList<MedicineBillEntry> bill;
+    MedicineBill(String user_id, int sequence_num, ArrayList<MedicineBillEntry> bill){
+        this.user_id=user_id;
+        this.sequence_num=sequence_num;
+        this.bill=bill;
+    }
+}
 public class MyWindows{
     Vector <Double>windows=new Vector <Double>();
+    Vector <Vector <Integer>>queue=new Vector <Vector<Integer>>();
     final double time_base=2;
     final double take_time=0.1;
     public MyWindows(int n){
         for(int i=0;i<n;i++){
             windows.add(0.0);
+            queue.add(new Vector<Integer>());
         }
     }
     boolean colseWindow(int i){
@@ -31,8 +43,10 @@ public class MyWindows{
     }
     boolean openWindow(int i){
         if(i>=windows.size()){
-            for(int j=windows.size();j<i;j++)
+            for(int j=windows.size();j<i;j++){
                 windows.add(-1.0);
+                queue.add(new Vector<Integer>());
+            }           
         }
         if(windows.get(i)==-1.0){
             windows.set(i,0.0);
