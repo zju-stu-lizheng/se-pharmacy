@@ -11,7 +11,9 @@ mysql> use se
 Database changed
 ```
 
-![image-20220502172252083](https://s2.loli.net/2022/05/02/9ayOUQwqpgS2khN.png)
+![软工前端table](https://s2.loli.net/2022/05/06/5j31CupHbfasw9A.png)
+
+
 
 ```sql
 create table `medicine`( 
@@ -65,6 +67,17 @@ create table shoppingCart(
 
 
 
+```sql
+create table `picture`(
+    `name` varchar(100),
+    `brand` varchar(100),
+    `url` varchar(256),
+    primary key(name,brand)
+)engine=InnoDB default charset= utf8;
+```
+
+
+
 ### 清空表格操作
 
 ```mysql
@@ -72,9 +85,17 @@ delete from log;
 delete from medicine;
 delete from administrator;
 delete from shoppingCart;
+delete from picture;
 ```
 
 
+
+### 插入图片
+
+```sql
+ insert into picture values('阿司匹林','国药','https://s2.loli.net/2022/05/06/q7ulP6FDjtVOMQE.png');
+ insert into picture values('头孢','国药','https://s2.loli.net/2022/05/06/Fp3MwJu1U8tbi96.png');
+```
 
 
 
@@ -83,6 +104,7 @@ delete from shoppingCart;
 ### 管理员 -> 药房
 
 * 入库一种药品，相当于数据库`medicine`表项增加一项
+
 
 ```json
 {
@@ -190,8 +212,9 @@ delete from shoppingCart;
 
 
 
+
 > Others:
 
 * **Eclipse**中**格式化代码的快捷键**是 Ctrl+Shift+F
-
 * `git pull` 之前请先`git add.` && `git commit -m "your commit"`
+* 图库使用`sm.ms`

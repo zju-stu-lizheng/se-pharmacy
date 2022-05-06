@@ -331,26 +331,41 @@ public class MyJDBC {
 	 * @return : csv格式的药品记录
 	 */
 	public String queryMedicine() {
-		String sqlExecutionString = "select * from medicine;";
-		StringBuffer queryResultBuffer = new StringBuffer();
+		String sqlExecutionString = "select name,brand,function,price,url from medicine natural join picture group by name,brand;";
+		StringBuffer queryResultBuffer = new StringBuffer("[");
+		int i=0,j=0;
+		String tmpString;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlExecutionString);
 			while (rs.next()) {
 				/* 根据 属性获取该条记录相应的值 */
-				String id = rs.getString("id");
-				String effective_date = rs.getString("effective_date");
-				String storehouse_id = rs.getString("storehouse_id");
-				String brandString = rs.getString("brand");
+				String brand = rs.getString("brand");
 				String name = rs.getString("name");
-				String function = rs.getString("function");
+				tmpString = rs.getString("function");
+				String url = rs.getString("url");
 				float price = rs.getFloat("price");
-				int stock = rs.getInt("stock");
+				StringBuffer function = new StringBuffer("");
+				char[]  c = tmpString.toCharArray();
 
-				String tmpString = id + "," + effective_date + "," + storehouse_id + "," + brandString + "," + name
-						+ "," + function + "," + price + "," + stock + "\n";
+				for (j = 0; j < c.length; j++) {
+					if (c[j] == '"') {
+						function.append("\\\"");
+					} else if (c[j] == '\\') {
+						function.append("\\\\");
+					} else {
+						function.append(c[j]);
+					}
+				}
+				if(i == 0)
+					tmpString = "[\"" + brand + "\",\"" + name + "\",\"" + function + "\","  + price + ",\"" + url + "\"]";
+				else {
+					tmpString = ",[\"" + brand + "\",\"" + name + "\",\"" + function + "\","  + price + ",\"" + url + "\"]";
+				}
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
+				i++;
 			}
+			queryResultBuffer.append("]");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -407,7 +422,8 @@ public class MyJDBC {
 				/* 根据 属性获取该条记录相应的值 */
 				String brand = rs.getString("brand");
 				String effective_date = rs.getString("effective_date");
-				MedicineBillEntry tmpBillEntry = new MedicineBillEntry(medicine_id, num, brand, storehouse_id,effective_date);
+				MedicineBillEntry tmpBillEntry = new MedicineBillEntry(medicine_id, num, brand, storehouse_id,
+						effective_date);
 				list.add(tmpBillEntry);
 			}
 			rs.close();

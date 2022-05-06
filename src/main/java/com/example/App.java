@@ -12,17 +12,35 @@ public class App {
 		MyJDBC conJdbc = new MyJDBC("001");
 		MyJDBC.connectDatabase();
 
+//		StringBuffer brand = new StringBuffer();
+//		String tmpString = "\"ni\\hao\"";
+//		System.out.println(tmpString);
+//
+//		char[] c = tmpString.toCharArray();
+//		int j;
+//
+//		for (j = 0; j < c.length; j++) {
+//			if (c[j] == '"') {
+//				brand.append("\\\"");
+//			} else if (c[j] == '\\') {
+//				brand.append("\\\\");
+//			} else {
+//				brand.append(c[j]);
+//			}
+//		}
+//		System.out.println(brand);
+
 		/* test for insert administator */
-		String ano = "001";
-		String aname = "lizheng";
-		String password = "yp";
-		String phonenumber = "123456";
-		conJdbc.insertAdministator(ano, aname, password, phonenumber);
+//		String ano = "001";
+//		String aname = "lizheng";
+//		String password = "yp";
+//		String phonenumber = "123456";
+//		conJdbc.insertAdministator(ano, aname, password, phonenumber);
 
 		/* test for insert Medicine */
 //		System.out.println("test for insert Medicine");
 //		String id = "001";
-//		String effString = "2022-05-25";
+//		String effString = "2022-05-28";
 //		String storeString = "1";
 //		String brandString = "国药";
 //		String name = "阿司匹林";

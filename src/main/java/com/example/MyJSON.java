@@ -214,26 +214,27 @@ public class MyJSON {
 		MyJDBC.connectDatabase();
 
 		String id = "001";
-		String effString = "2022-05-25";
-		String storeString = "1";
-		String brandString = "国药";
+		String effString = "2022-05-27";
+		String storeString = "01";
+		String brandString = "科兴";
 		String name = "阿司匹林";
 		String function = "解热镇痛";
 		float price = 25.0f;
-		int stock = 20;
-		String insertMedicine1 = String.format(insertMedicineString, id, effString, storeString, brandString, name,
+		int stock = 25;
+		String insertMedicine1 = String.format(insertMedicineString,"001", id,storeString, effString , brandString, name,
 				function, price, stock);
 
 		id = "002";
 		effString = "2022-05-30";
-		storeString = "1";
+		storeString = "01";
 		brandString = "国药";
 		name = "头孢";
 		function = "头孢就酒，越喝越勇";
 		price = 24.0f;
 		stock = 10;
-		String insertMedicine2 = String.format(insertMedicineString, id, effString, storeString, brandString, name,
+		String insertMedicine2 = String.format(insertMedicineString,"001", id,storeString, effString , brandString, name,
 				function, price, stock);
+		
 
 		String s2 = "{\r\n" + "    \"op\" : \"delete_medicine\",	\r\n" + "    \"ano\" : \"001\",\r\n"
 				+ "    \"id\" : \"001\",		\r\n" + "    \"storehouse_id\" : \"01\",			\r\n"
@@ -253,11 +254,11 @@ public class MyJSON {
 				+ "    \"user_id\" : \"001\"\r\n" + "}";
 
 		System.out.println(jsonParser(insertMedicine1));
-		System.out.println(jsonParser(insertMedicine2));
+//		System.out.println(jsonParser(insertMedicine2));
 		System.out.println(jsonParser(s3));
 
-		System.out.println(jsonParser(s4));
-		System.out.println(jsonParser(s5));
+//		System.out.println(jsonParser(s4));
+//		System.out.println(jsonParser(s5));
 		System.out.println(jsonParser(queryShoppingString));
 	}
 }

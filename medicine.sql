@@ -9,6 +9,13 @@ create table `medicine`(
     `stock` int,
     primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;
 
+create table `picture`(
+    `name` varchar(100),
+    `brand` varchar(100),
+    `url` varchar(256),
+    primary key(name,brand)
+)engine=InnoDB default charset= utf8;
+
 create table `administrator`( 
     `ano` char(10),
     `aname` char(100),
