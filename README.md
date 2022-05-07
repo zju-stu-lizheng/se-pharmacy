@@ -186,7 +186,7 @@ public boolean deleteMedicine(String id, String storehouse_id, String effective_
 	 * 查询目标用户购物车中的药品列表
 	 * 
 	 * @param user_id : 用户 id
-	 * @return : csv格式的药品记录
+	 * @return : list格式的药品记录
 	 */
 public String queryShoppingCart(String user_id);
 ```
