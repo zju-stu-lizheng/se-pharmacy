@@ -8,9 +8,8 @@ import java.sql.SQLException;
  */
 public class App {
 	public static void main(String[] args) {
-		System.out.println("Hello World!");
+		System.out.println("Welcome to App!");
 		MyJDBC conJdbc = new MyJDBC("001");
-		MyJDBC.connectDatabase();
 
 //		StringBuffer brand = new StringBuffer();
 //		String tmpString = "\"ni\\hao\"";
@@ -38,26 +37,26 @@ public class App {
 //		conJdbc.insertAdministator(ano, aname, password, phonenumber);
 
 		/* test for insert Medicine */
-//		System.out.println("test for insert Medicine");
-//		String id = "001";
-//		String effString = "2022-05-28";
-//		String storeString = "1";
-//		String brandString = "国药";
-//		String name = "阿司匹林";
-//		String function = "解热镇痛";
-//		float price = 25.0f;
-//		int stock = 20;
-//		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
-//
-//		id = "002";
-//		effString = "2022-05-30";
-//		storeString = "1";
-//		brandString = "国药";
-//		name = "头孢";
-//		function = "头孢就酒，越喝越勇";
-//		price = 24.0f;
-//		stock = 10;
-//		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
+		System.out.println("test for insert Medicine");
+		String id = "001";
+		String effString = "2022-05-28";
+		String storeString = "1";
+		String brandString = "国药";
+		String name = "阿司匹林";
+		String function = "解热镇痛";
+		float price = 25.0f;
+		int stock = 20;
+		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
+
+		id = "002";
+		effString = "2022-05-30";
+		storeString = "1";
+		brandString = "国药";
+		name = "头孢";
+		function = "头孢就酒，越喝越勇";
+		price = 24.0f;
+		stock = 10;
+		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
 
 		/* test for query all */
 		System.out.print(conJdbc.queryMedicine());
@@ -96,23 +95,25 @@ public class App {
 		// }
 
 		/* test for addShoppingCart */
-//		System.out.println("test for addShoppingCart");
-//		try {
-//			if(conJdbc.addShoppingCart("001", "001", "1", 2)) {
-//				System.out.println("add1 success");
-//			}
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		System.out.println("test for addShoppingCart 2");
-//		try {
-//			conJdbc.addShoppingCart("001", "002", "1", 3);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//
-//		System.out.println("Total Price for 1 is " + conJdbc.getPrice("001", "1"));
-//		System.out.println("Total Price for 2 is " + conJdbc.getPrice("001", "2"));
+		System.out.println("test for addShoppingCart");
+		try {
+			if(conJdbc.addShoppingCart("001", "001", "1", 2)) {
+				System.out.println("add1 success");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		System.out.println("test for addShoppingCart 2");
+		try {
+			conJdbc.addShoppingCart("001", "002", "1", 3);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("Total Price for 1 is " + conJdbc.getPrice("001", "1"));
+		System.out.println("Total Price for 2 is " + conJdbc.getPrice("001", "2"));
+		
+		System.out.println(conJdbc.queryShoppingCart("001"));
 
 		/* test for deleteShoppingCart */
 //		System.out.println("test for deleteShoppingCart");
@@ -122,6 +123,7 @@ public class App {
 //			e.printStackTrace();
 //		}
 
-		MyJDBC.disconnectDatabase();
+//		MyJDBC.disconnectDatabase();
+		conJdbc = null;
 	}
 }
