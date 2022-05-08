@@ -289,7 +289,7 @@ public class MyJDBC {
 	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
 	 * @param storehouse_id  : 库房 id <char(2)>
 	 * @param stock          : 药品 库存(入库数量)
-	 * @return
+	 * @return : true(插入成功)/false(插入失败)
 	 */
 	public boolean addMedicine(String id, String effective_date, String storehouse_id, int stock) {
 		int remainStock = 0;
@@ -389,12 +389,13 @@ public class MyJDBC {
 	/**
 	 * 查询目标用户购物车中的药品列表
 	 * 
-	 * @param user_id : 用户 id
-	 * @return : csv格式的药品记录
+	 * @param user_id     : 用户 id
+	 * @param branch_name : 药房 id
+	 * @return : list格式的药品记录
 	 */
-	public String queryShoppingCart(String user_id) {
+	public String queryShoppingCart(String user_id, String branch_name) {
 		String sqlExecutionString = String.format(
-				"select * from shoppingCart natural join medicine where user_id = '%s' and medicine_id = id;", user_id);
+				"select * from shoppingCart natural join medicine where user_id = '%s' and medicine_id = id and storehouse_id = '%s';", user_id,branch_name);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -441,7 +442,7 @@ public class MyJDBC {
 	// To do list: 根据有效日期和购物车中药品,返回一个ArrayList<MedicineBillEntry> bill;
 	public ArrayList<MedicineBillEntry> getBillEntries(String user_id) {
 		ArrayList<MedicineBillEntry> list = new ArrayList<MedicineBillEntry>();
-		ResultSet rs;
+		ResultSet rs,dateResultSet;
 		// 从购物车中搜索得到该用户需要买的药
 		String sqlExecutionString = String.format("select * from shoppingCart where user_id = '%s';", user_id);
 		try (Statement stmt = connection.createStatement()) {
@@ -456,11 +457,12 @@ public class MyJDBC {
 				sqlExecutionString = String.format(
 						"select brand,effective_date from medicine where id = '%s' AND storehouse_id = '%s' ORDER BY effective_date ASC;",
 						medicine_id, storehouse_id);
-				rs = stmt.executeQuery(sqlExecutionString);
-				rs.next();
+				// 执行搜索语句，我只取第一条记录
+				dateResultSet = stmt.executeQuery(sqlExecutionString);
+				dateResultSet.next();
 				/* 根据 属性获取该条记录相应的值 */
-				String brand = rs.getString("brand");
-				String effective_date = rs.getString("effective_date");
+				String brand = dateResultSet.getString("brand");
+				String effective_date = dateResultSet.getString("effective_date");
 				MedicineBillEntry tmpBillEntry = new MedicineBillEntry(medicine_id, num, brand, storehouse_id,
 						effective_date);
 				list.add(tmpBillEntry);

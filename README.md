@@ -13,68 +13,7 @@ Database changed
 
 <img src="https://s2.loli.net/2022/05/07/FgGBVzX5leHLbfP.png" alt="软工前端table" style="zoom:80%;" />
 
-
-
-```sql
-create table `medicine`( 
-    `id` char(10), 
-    `effective_date` date,/*YYYY-MM-DD*/
-    `storehouse_id` char(2),
-    `brand` varchar(100),
-    `name` varchar(100), 
-    `function` varchar(100),
-    `price` float,
-    `stock` int,
-    primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;
-```
-
-
-
-```sql
-create table `administrator`( 
-    `ano` char(10),
-    `aname` char(100),
-    `password` char(100), 
-    `phonenumber` char(100),
-    primary key(ano))engine=InnoDB default charset= utf8;
-```
-
-
-
-```sql
-create table `log`( 
-    `ano` char(10),
-    `option` char(100),
-    `id` char(10), 
-    `effective_date` date,/*YYYY-MM-DD*/
-    `storehouse_id` char(2),
-    `stock` int,
-    foreign key (ano) references administrator(ano)
-    )engine=InnoDB default charset= utf8;
-```
-
-
-
-```sql
-create table shoppingCart(
-	`user_id` char(10),
-	`medicine_id` char(10),
-	`num` int,
-    `storehouse_id` char(2),
-	primary key(user_id,medicine_id,storehouse_id)
-)engine=InnoDB default charset= utf8;
-```
-
-
-
-```sql
-create table `picture`(
-    `name` varchar(100),
-    `brand` varchar(100),
-    `url` varchar(256),
-    primary key(name,brand)
-)engine=InnoDB default charset= utf8;
-```
+**创建表的`sql`语句请看`medicine.sql`**
 
 
 
@@ -86,6 +25,12 @@ delete from medicine;
 delete from administrator;
 delete from shoppingCart;
 delete from picture;
+```
+
+### 插入管理员
+
+```sql
+insert into administrator values('001','lizheng','yp','123456');
 ```
 
 
@@ -185,10 +130,11 @@ public boolean deleteMedicine(String id, String storehouse_id, String effective_
 /**
 	 * 查询目标用户购物车中的药品列表
 	 * 
-	 * @param user_id : 用户 id
+	 * @param user_id     : 用户 id
+	 * @param branch_name : 药房 id
 	 * @return : list格式的药品记录
 	 */
-public String queryShoppingCart(String user_id);
+public String queryShoppingCart(String user_id, String branch_name);
 ```
 
 返回例子：`[m_id,brand,name,function,price,num]`

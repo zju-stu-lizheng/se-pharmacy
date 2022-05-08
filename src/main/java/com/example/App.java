@@ -11,31 +11,6 @@ public class App {
 		System.out.println("Welcome to App!");
 		MyJDBC conJdbc = new MyJDBC("001");
 
-//		StringBuffer brand = new StringBuffer();
-//		String tmpString = "\"ni\\hao\"";
-//		System.out.println(tmpString);
-//
-//		char[] c = tmpString.toCharArray();
-//		int j;
-//
-//		for (j = 0; j < c.length; j++) {
-//			if (c[j] == '"') {
-//				brand.append("\\\"");
-//			} else if (c[j] == '\\') {
-//				brand.append("\\\\");
-//			} else {
-//				brand.append(c[j]);
-//			}
-//		}
-//		System.out.println(brand);
-
-		/* test for insert administator */
-//		String ano = "001";
-//		String aname = "lizheng";
-//		String password = "yp";
-//		String phonenumber = "123456";
-//		conJdbc.insertAdministator(ano, aname, password, phonenumber);
-
 		/* test for insert Medicine */
 		System.out.println("test for insert Medicine");
 		String id = "001";
@@ -59,18 +34,18 @@ public class App {
 		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
 
 		/* test for query all */
-		System.out.print(conJdbc.queryMedicine());
+		System.out.println(conJdbc.queryMedicine());
 
 		/* test for add Medicine */
-//		System.out.println("test for add Medicine");
-//		id = "001";
-//		effString = "2022-05-25";
-//		storeString = "1";
-//		stock = 20;
-//		conJdbc.addMedicine(id, effString, storeString, stock);
+		System.out.println("test for add Medicine");
+		id = "001";
+		effString = "2022-05-25";
+		storeString = "1";
+		stock = 20;
+		conJdbc.addMedicine(id, effString, storeString, stock);
 
 		/* test for query all */
-//		System.out.print(conJdbc.queryMedicine());
+		System.out.print(conJdbc.queryMedicine());
 
 		// /* test for delivery Medicine */
 		// System.out.println("test for delivery Medicine");
@@ -113,7 +88,7 @@ public class App {
 		System.out.println("Total Price for 1 is " + conJdbc.getPrice("001", "1"));
 		System.out.println("Total Price for 2 is " + conJdbc.getPrice("001", "2"));
 		
-		System.out.println(conJdbc.queryShoppingCart("001"));
+		System.out.println(conJdbc.queryShoppingCart("001","1"));
 
 		/* test for deleteShoppingCart */
 //		System.out.println("test for deleteShoppingCart");
@@ -123,7 +98,6 @@ public class App {
 //			e.printStackTrace();
 //		}
 
-//		MyJDBC.disconnectDatabase();
 		conJdbc = null;
 	}
 }
