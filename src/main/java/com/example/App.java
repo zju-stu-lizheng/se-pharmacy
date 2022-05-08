@@ -32,6 +32,16 @@ public class App {
 		price = 24.0f;
 		stock = 10;
 		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
+		
+		id = "001";
+		effString = "2022-06-29";
+		storeString = "1";
+		brandString = "国药";
+		name = "阿司匹林";
+		function = "解热镇痛";
+		price = 25.0f;
+		stock = 10;
+		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
 
 		/* test for query all */
 		System.out.println(conJdbc.queryMedicine());
@@ -39,13 +49,13 @@ public class App {
 		/* test for add Medicine */
 		System.out.println("test for add Medicine");
 		id = "001";
-		effString = "2022-05-25";
+		effString = "2022-05-28";
 		storeString = "1";
 		stock = 20;
 		conJdbc.addMedicine(id, effString, storeString, stock);
 
 		/* test for query all */
-		System.out.print(conJdbc.queryMedicine());
+		System.out.println(conJdbc.queryMedicine());
 
 		// /* test for delivery Medicine */
 		// System.out.println("test for delivery Medicine");

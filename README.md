@@ -94,10 +94,10 @@ public boolean deleteMedicine(String id, String storehouse_id, String effective_
   public String queryMedicine();
   ```
 
-返回例子：`[m_id,brand,name,function,price,url]`
+返回例子：`[m_id,brand,name,function,price,url,stock]`
 
   ```python
-  [["002","国药","头孢","头孢就酒，越喝越勇",25.0,"https://s2.loli.net/2022/05/06/Fp3MwJu1U8tbi96.png"],["001","国药","阿司匹林","解热镇痛",25.0,"https://s2.loli.net/2022/05/06/q7ulP6FDjtVOMQE.png"]]
+  [["002","国药","头孢","头孢就酒，越喝越勇",24.0,"https://s2.loli.net/2022/05/06/Fp3MwJu1U8tbi96.png",10],["001","国药","阿司匹林","解热镇痛",25.0,"https://s2.loli.net/2022/05/06/q7ulP6FDjtVOMQE.png",30]]
   ```
 
   

@@ -342,7 +342,7 @@ public class MyJDBC {
 	 * @return : list(python)格式的药品记录
 	 */
 	public String queryMedicine() {
-		String sqlExecutionString = "select id,name,brand,function,price,url from medicine natural join picture group by name,brand;";
+		String sqlExecutionString = "select id,name,brand,function,price,url,sum(stock) as allStock from medicine natural join picture group by name,brand;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -356,6 +356,7 @@ public class MyJDBC {
 				tmpString = rs.getString("function");
 				String url = rs.getString("url");
 				float price = rs.getFloat("price");
+				int allStock = rs.getInt("allStock");
 				StringBuffer function = new StringBuffer("");
 				char[] c = tmpString.toCharArray();
 
@@ -370,10 +371,10 @@ public class MyJDBC {
 				}
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + price
-							+ ",\"" + url + "\"]";
+							+ ",\"" + url + "\"," + allStock + "]";
 				else {
 					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + price
-							+ ",\"" + url + "\"]";
+							+ ",\"" + url + "\"," + allStock + "]";
 				}
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
