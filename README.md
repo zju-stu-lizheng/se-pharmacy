@@ -143,7 +143,7 @@ public String queryShoppingCart(String user_id, String branch_name);
   [["001","国药","阿司匹林","解热镇痛",25.0,2],["002","国药","头孢","头孢就酒，越喝越勇",24.0,3]]
   ```
 
-* 加入购物车操作
+* 加入购物车操作(增量操作)
   * String user_id : 用户 id
   * String medicine_id : 药品 id
   * String storehouse_id : 药房 id
@@ -162,6 +162,55 @@ public String queryShoppingCart(String user_id, String branch_name);
 	 */
 public boolean addShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
     throws SQLException 
+```
+
+* 直接设定一个药品需要购买的数量
+
+```
+/**
+	 * 往购物车内插入一条药品信息 : 将数量设定成指定的数量
+	 * 
+	 * @param user_id       : 用户 id
+	 * @param medicine_id   : 药品 id
+	 * @param storehouse_id : 药房 id
+	 * @param num           : 数量
+	 * @return true(修改成功)/false(修改失败)
+	 * @throws SQLException
+	 */
+	public boolean setShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
+			throws SQLException;
+```
+
+
+
+* 减少购买的数量(增量操作)
+
+```java
+/**
+	 * 从购物车中减少要购买的药品的数量
+	 * @param user_id       : 用户 id
+	 * @param medicine_id   : 药品 id
+	 * @param storehouse_id : 药房 id
+	 * @param num           : 数量
+	 * @return true(插入成功)/false(插入失败)
+	 * @throws SQLException
+	 */
+public boolean deleteShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
+    throws SQLException;
+```
+
+
+
+* 查询购物车内药品价格之和
+
+```java
+/**
+	 * 获取购物车的总价
+	 * @param user_id       : 用户 id
+	 * @param storehouse_id : 药房 id
+	 * @return 总价:float
+	 */
+public float getPrice(String user_id, String storehouse_id)
 ```
 
 

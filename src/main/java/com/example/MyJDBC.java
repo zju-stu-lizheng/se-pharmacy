@@ -475,6 +475,72 @@ public class MyJDBC {
 		}
 		return list;
 	}
+	
+	/**
+	 * 往购物车内插入一条药品信息 : 将数量设定成指定的数量
+	 * 
+	 * @param user_id       : 用户 id
+	 * @param medicine_id   : 药品 id
+	 * @param storehouse_id : 药房 id
+	 * @param num           : 数量
+	 * @return true(修改成功)/false(修改失败)
+	 * @throws SQLException
+	 */
+	public boolean setShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
+			throws SQLException {
+		String sqlExecutionString = "";
+		ResultSet resultSet;
+		Statement statement;
+		try {
+			// 获取执行sql语句的statement对象
+			statement = connection.createStatement();
+			sqlExecutionString = String.format(
+					"SELECT SUM(stock) FROM medicine WHERE id = '%s' AND storehouse_id = '%s' GROUP BY id;",
+					medicine_id, storehouse_id);
+			// 查询该药品的库存
+			resultSet = statement.executeQuery(sqlExecutionString);
+			// 判断是否存在该药品，若不存在返回false
+			if (!resultSet.next()) {
+				return false;
+			} else {
+				if (resultSet.getString(1) == null)
+					return false;
+			}
+			// 记录该药品当前的库存
+			int stock = Integer.valueOf(resultSet.getString(1));
+			// 查询购物车中是否已经有该药品
+			resultSet = statement.executeQuery(String.format(
+					"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s';",
+					medicine_id, user_id, storehouse_id));
+			// 判断是否存在该药品
+			if (resultSet.next()) {
+				// 如果购物车数量大于库存，返回false
+				if (stock < num)
+					return false;
+				// 更新购物车的记录
+				sqlExecutionString = String.format(
+						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id = '%s';",
+						num, user_id, medicine_id, storehouse_id);
+				statement.executeUpdate(sqlExecutionString);
+			} else {
+				// 如果购物车数量大于库存，返回false
+				if (stock < num)
+					return false;
+				// 将记录插入到购物车表中
+				sqlExecutionString = String.format("INSERT INTO shoppingCart VALUES('%s','%s', %d,'%s');", user_id,
+						medicine_id, num, storehouse_id);
+				statement.executeUpdate(sqlExecutionString);
+			}
+			// 成功则提交
+			connection.commit();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+			// 失败则事务回滚
+			connection.rollback();
+			return false;
+		}
+		return true;
+	}
 
 	/**
 	 * 往购物车内插入一条药品信息
@@ -545,6 +611,15 @@ public class MyJDBC {
 		return true;
 	}
 
+	/**
+	 * 从购物车中减少要购买的药品的数量
+	 * @param user_id       : 用户 id
+	 * @param medicine_id   : 药品 id
+	 * @param storehouse_id : 药房 id
+	 * @param num           : 数量
+	 * @return true(插入成功)/false(插入失败)
+	 * @throws SQLException
+	 */
 	public boolean deleteShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
 			throws SQLException {
 		String sqlExecutionString = "";
@@ -590,6 +665,12 @@ public class MyJDBC {
 		return true;
 	}
 
+	/**
+	 * 获取购物车的总价
+	 * @param user_id       : 用户 id
+	 * @param storehouse_id : 药房 id
+	 * @return 总价:float
+	 */
 	public float getPrice(String user_id, String storehouse_id) {
 		float sum;
 		ResultSet resultSet;
