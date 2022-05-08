@@ -11,57 +11,9 @@ mysql> use se
 Database changed
 ```
 
-![image-20220502172252083](https://s2.loli.net/2022/05/02/9ayOUQwqpgS2khN.png)
+<img src="https://s2.loli.net/2022/05/07/FgGBVzX5leHLbfP.png" alt="软工前端table" style="zoom:80%;" />
 
-```sql
-create table `medicine`( 
-    `id` char(10), 
-    `effective_date` date,/*YYYY-MM-DD*/
-    `storehouse_id` char(2),
-    `brand` varchar(100),
-    `name` varchar(100), 
-    `function` varchar(100),
-    `price` float,
-    `stock` int,
-    primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;
-```
-
-
-
-```sql
-create table `administrator`( 
-    `ano` char(10),
-    `aname` char(100),
-    `password` char(100), 
-    `phonenumber` char(100),
-    primary key(ano))engine=InnoDB default charset= utf8;
-```
-
-
-
-```sql
-create table `log`( 
-    `ano` char(10),
-    `option` char(100),
-    `id` char(10), 
-    `effective_date` date,/*YYYY-MM-DD*/
-    `storehouse_id` char(2),
-    `stock` int,
-    foreign key (ano) references administrator(ano)
-    )engine=InnoDB default charset= utf8;
-```
-
-
-
-```sql
-create table shoppingCart(
-	`user_id` char(10),
-	`medicine_id` char(10),
-	`num` int,
-    `storehouse_id` char(2),
-	primary key(user_id,medicine_id,storehouse_id)
-)engine=InnoDB default charset= utf8;
-```
+**创建表的`sql`语句请看`medicine.sql`**
 
 
 
@@ -72,88 +24,124 @@ delete from log;
 delete from medicine;
 delete from administrator;
 delete from shoppingCart;
+delete from picture;
+```
+
+### 插入管理员
+
+```sql
+insert into administrator values('001','lizheng','yp','123456');
 ```
 
 
 
+### 插入图片
+
+```sql
+ insert into picture values('阿司匹林','国药','https://s2.loli.net/2022/05/06/q7ulP6FDjtVOMQE.png');
+ insert into picture values('头孢','国药','https://s2.loli.net/2022/05/06/Fp3MwJu1U8tbi96.png');
+```
 
 
-## 二、数据包格式
+
+## 二、API list
 
 ### 管理员 -> 药房
 
 * 入库一种药品，相当于数据库`medicine`表项增加一项
 
-```json
-{
-    "op" : "insert_medicine",	// insert medicial option
-    "ano" : "001",		//char(10),管理员id
-    "id" : "001",		// char(10),药品id
-    "storehouse_id" : "01",			//char(2),药房id
-    "effective_date" : "2022-05-23", //YYYY-MM-DD
-    "brand" : "国药",				  //char(100)
-    "name" : "阿司匹林",			//char(100)
-    "function" : "解热镇痛",		//char(100)
-    "price" : 25.0,				  //float
-    "stock" : 25				 //int
-}
+```java
+/**
+	 * 插入一条药品信息
+	 * 
+	 * @param id             : 药品 id
+	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
+	 * @param storehouse_id  : 库房 id <char(2)>
+	 * @param brand          : 药品 厂商
+	 * @param name           : 药品 名字
+	 * @param function       : 药品 作用
+	 * @param price          : 药品 单价
+	 * @param stock          : 药品 库存(入库数量)
+	 * @return : true(插入成功)/false(插入失败)
+	 */
+public boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand, String name,
+                              String function, float price, int stock);
 ```
 
 * 删除一条药品信息
 
-```json
-{
-    "op" : "delete_medicine",	
-    "ano" : "001",
-    "id" : "001",		// char(10)
-    "storehouse_id" : "01",			//char(2)
-    "effective_date" : "2022-05-23"	//YYYY-MM-DD
-}
+```java
+/**
+	 * 删除一条药品信息(如不存在，则返回false)
+	 * 
+	 * @param id             : 药品 id
+	 * @param storehouse_id  : 库房 id <char(2)>
+	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
+	 * @param stock          : 药品 库存(入库数量)
+	 * @return : true(删除成功)/false(删除失败)
+	 */
+public boolean deleteMedicine(String id, String storehouse_id, String effective_date) throws SQLException;
 ```
 
 * 查询药品信息
-  * 需要告知管理员id（是谁进行查询）
 
+  ```java
+  /**
+  	 * 查询所有药品记录
+  	 * 
+  	 * @return : list(python)格式的药品记录
+  	 */
+  public String queryMedicine();
+  ```
 
-```json
-{
-    "op" : "query_medicine",	
-    "ano" : "001"
-}
+返回例子：`[m_id,brand,name,function,price,url,stock]`
+
+  ```python
+  [["002","国药","头孢","头孢就酒，越喝越勇",24.0,"https://s2.loli.net/2022/05/06/Fp3MwJu1U8tbi96.png",10],["001","国药","阿司匹林","解热镇痛",25.0,"https://s2.loli.net/2022/05/06/q7ulP6FDjtVOMQE.png",30]]
+  ```
+
+  
+
+* 药品出库
+
+```java
+  /**
+  	 * 药品出库(如不存在，则返回false)
+  	 * 
+  	 * @param id             : 药品 id
+  	 * @param storehouse_id  : 库房 id <char(2)>
+  	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
+  	 * @param num            : 药品 出库数量
+  	 * @return : true(出库成功)/false(出库失败)
+  	 */
+  public boolean deliveryMedicine(String id, String storehouse_id, String effective_date, int num)
+      throws SQLException;
 ```
 
-### 药房 -> 管理员
+  
 
-* 出入库的返回包
-  * response 是 boolean 型变量, true/false
 
-```json
-{
-	"op" : "ret_update",
-	"response" : true
-}
-```
-
-* 查询药品的返回包
-  * 以`csv`格式返回药品信息。
-
-```json
-{
-	"op" : "ret_query",
-	"medicine_list" : "001,2022-05-23,01,国药,阿司匹林,解热镇痛,25.0,25\n"
-}
-```
 
 ### 患者 -> 药房
 
 * 查询购物车中的药品清单
 
-```json
-{
-    "op" : "query_shoppingCart",	
-    "user_id" : "001"
-}
+```java
+/**
+	 * 查询目标用户购物车中的药品列表
+	 * 
+	 * @param user_id     : 用户 id
+	 * @param branch_name : 药房 id
+	 * @return : list格式的药品记录
+	 */
+public String queryShoppingCart(String user_id, String branch_name);
 ```
+
+返回例子：`[m_id,brand,name,function,price,num]`
+
+  ```python
+  [["001","国药","阿司匹林","解热镇痛",25.0,2],["002","国药","头孢","头孢就酒，越喝越勇",24.0,3]]
+  ```
 
 * 加入购物车操作
   * String user_id : 用户 id
@@ -161,31 +149,20 @@ delete from shoppingCart;
   * String storehouse_id : 药房 id
   * int num ：数量
 
-````json
-{
-    "op" : "insert_shoppingCart",	
-    "user_id" : "001",
-    "medicine_id" : "001",
-    "storehouse_id" : "01",
-    "num" : 5
-}
-````
-
-### 药房 -> 患者
-
-* 加入购物车的返回包
-
-```json
-{"op":"ret_update","response":true}
+```java
+/**
+	 * 往购物车内插入一条药品信息
+	 * 
+	 * @param user_id       : 用户 id
+	 * @param medicine_id   : 药品 id
+	 * @param storehouse_id : 药房 id
+	 * @param num           : 数量
+	 * @return true(插入成功)/false(插入失败)
+	 * @throws SQLException
+	 */
+public boolean addShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
+    throws SQLException 
 ```
-
-* 查询购物车返回包
-  * 以 csv 格式返回，每行记录格式为`(medicine_id,storehouse_id,num)`
-
-```json
-{"op":"ret_query","medicine_list":"001,01,5\n"}
-```
-
 
 
 
@@ -193,5 +170,5 @@ delete from shoppingCart;
 > Others:
 
 * **Eclipse**中**格式化代码的快捷键**是 Ctrl+Shift+F
-
 * `git pull` 之前请先`git add.` && `git commit -m "your commit"`
+* 图库使用`sm.ms`

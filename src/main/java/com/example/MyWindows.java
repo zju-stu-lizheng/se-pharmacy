@@ -1,7 +1,11 @@
 package com.example;
 import java.util.ArrayList;
 import java.util.*;
+<<<<<<< HEAD
 //订单表项类
+=======
+
+>>>>>>> ae3372efeee750c0ceb463870462698ce72c105c
 class MedicineBillEntry{
     //订单表项含有药品id,数量,品牌,有效期,药房号等数量
     String medicine_id;
@@ -9,14 +13,23 @@ class MedicineBillEntry{
     String brand;
     String storehouse_id;
     String effective_date;
+<<<<<<< HEAD
     public MedicineBillEntry(String medicine_id, int num, String brand, String storehouse_id){
+=======
+    public MedicineBillEntry(String medicine_id, int num, String brand, String storehouse_id,String effective_date){
+>>>>>>> ae3372efeee750c0ceb463870462698ce72c105c
         this.medicine_id=medicine_id;
         this.num=num;
         this.brand=brand;
         this.storehouse_id=storehouse_id;
+        this.effective_date = effective_date;
     }
 }
+<<<<<<< HEAD
 //订单类
+=======
+
+>>>>>>> ae3372efeee750c0ceb463870462698ce72c105c
 class MedicineBill{
     //患者id
     String user_id;
@@ -30,7 +43,11 @@ class MedicineBill{
         this.bill=bill;
     }
 }
+<<<<<<< HEAD
 //药房窗口类
+=======
+
+>>>>>>> ae3372efeee750c0ceb463870462698ce72c105c
 public class MyWindows{
     //记录估计的等待时间，线程安全 <0 表示窗口关闭
     Vector <Double>windows=new Vector <Double>();
