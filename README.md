@@ -166,7 +166,7 @@ public boolean addShoppingCart(String user_id, String medicine_id, String storeh
 
 * 直接设定一个药品需要购买的数量
 
-```
+```java
 /**
 	 * 往购物车内插入一条药品信息 : 将数量设定成指定的数量
 	 * 

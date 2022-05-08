@@ -565,7 +565,7 @@ public class MyJDBC {
 					medicine_id, storehouse_id);
 			// 查询该药品的库存
 			resultSet = statement.executeQuery(sqlExecutionString);
-//			System.out.println(sqlExecutionString);
+			
 			// 判断是否存在该药品，若不存在返回false
 			if (!resultSet.next()) {
 				return false;
@@ -581,8 +581,10 @@ public class MyJDBC {
 					medicine_id, user_id, storehouse_id));
 			// 判断是否存在该药品
 			if (resultSet.next()) {
+				System.out.println("in if");
 				// 更新num
 				num += Integer.valueOf(resultSet.getString(1));
+				System.out.println("num = "+num + ";stock = "+stock);
 				// 如果购物车数量大于库存，返回false
 				if (stock < num)
 					return false;
@@ -592,6 +594,7 @@ public class MyJDBC {
 						num, user_id, medicine_id, storehouse_id);
 				statement.executeUpdate(sqlExecutionString);
 			} else {
+				System.out.println("in else");
 				// 如果购物车数量大于库存，返回false
 				if (stock < num)
 					return false;
