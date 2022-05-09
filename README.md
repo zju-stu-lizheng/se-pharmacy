@@ -27,6 +27,7 @@ delete from medicine;
 delete from administrator;
 delete from shoppingCart;
 delete from picture;
+delete from bill;
 ```
 
 ### 插入管理员
@@ -223,3 +224,4 @@ public float getPrice(String user_id, String storehouse_id)
 * **Eclipse**中**格式化代码的快捷键**是 Ctrl+Shift+F
 * `git pull` 之前请先`git add.` && `git commit -m "your commit"`
 * 图库使用`sm.ms`
+

@@ -19,6 +19,7 @@ public class MyJDBC {
 	static final String USERNAME = "root";
 	static final String PASSWD = "lizheng";
 
+	//sql
 	static Connection connection = null;
 	String anoString;
 	Boolean isAdministrator;
@@ -415,15 +416,16 @@ public class MyJDBC {
 	 * @return : list格式的药品记录
 	 */
 	public String queryShoppingCart(String user_id, String branch_name) {
-		String sqlExecutionString = String.format(
+		String sqlQueryString = String.format(
 				"select * from shoppingCart natural join medicine where user_id = '%s' and medicine_id = id and storehouse_id = '%s' group by storehouse_id,user_id,medicine_id;",
 				user_id, branch_name);
-//		System.out.println(sqlExecutionString);
-		StringBuffer queryResultBuffer = new StringBuffer("[");
+//		System.out.println(sqlQueryString);
+		StringBuffer BillItemBuffer = new StringBuffer("[");
+		StringBuffer queryResultBuffer = new StringBuffer();
 		int i = 0, j = 0;
 		String tmpString;
 		try (Statement stmt = connection.createStatement()) {
-			ResultSet rs = stmt.executeQuery(sqlExecutionString);
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
 			while (rs.next()) {
 				/* 根据 属性获取该条记录相应的值 */
 				String id = rs.getString("medicine_id");
@@ -452,11 +454,11 @@ public class MyJDBC {
 							+ "," + num + "]";
 				}
 				/* 将每条记录添加入 buffer */
-				queryResultBuffer.append(tmpString);
+				BillItemBuffer.append(tmpString);
 				i++;
 			}
-			queryResultBuffer.append("]");
-			// 账单
+			BillItemBuffer.append("]");
+			// 账单,账单号,排队号,柜台号
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
