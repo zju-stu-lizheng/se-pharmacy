@@ -7,18 +7,20 @@ import java.sql.SQLException;
 import org.junit.Test;
 
 /**
- * Unit test for simple MyJSON.
+ * Unit test for simple App.
  */
-public class AppTest 
-{
-    /**
-     * Rigorous Test :-)
-     */
-    @Test
-    public void shouldAnswerWithTrue()
-    {
-    	System.out.println("Welcome to App!");
+public class AppTest {
+	/**
+	 * test for MyJDBC 测试入库，加入购物车等操作
+	 */
+	@Test
+	public void testForMyJDBC() {
+		System.out.println("Welcome to App!");
 		MyJDBC conJdbc = new MyJDBC("001");
+
+		conJdbc.doDeleteTable("shoppingcart");
+		conJdbc.doDeleteTable("medicine");
+		conJdbc.doDeleteTable("bill");
 
 		/* test for insert Medicine */
 		System.out.println("test for insert Medicine");
@@ -41,7 +43,7 @@ public class AppTest
 		price = 24.0f;
 		stock = 10;
 		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
-		
+
 		id = "001";
 		effString = "2022-06-29";
 		storeString = "1";
@@ -88,33 +90,59 @@ public class AppTest
 		// e.printStackTrace();
 		// }
 
-		/* test for addShoppingCart */
-		System.out.println("test for addShoppingCart");
+		/* test for setShoppingCart */
+		System.out.println("test for setShoppingCart");
 		try {
-			assertTrue(conJdbc.addShoppingCart("001", "001", "1", 2));
+			assertTrue(conJdbc.setShoppingCart("001", "001", "1", 2));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		System.out.println("test for addShoppingCart 2");
+		
+		System.out.println(conJdbc.queryShoppingCart("001", "1"));
+		
+		/* test for addShoppingCart */
+		System.out.println("test for addshoppingCart");
 		try {
-			assertTrue(conJdbc.addShoppingCart("001", "002", "1", 3));
+			assertTrue(conJdbc.addShoppingCart("001", "001", "1", 3));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println(conJdbc.queryShoppingCart("001", "1"));
+		
+		System.out.println("test for setShoppingCart 2");
+		try {
+			assertTrue(conJdbc.setShoppingCart("001", "002", "1", 4));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println(conJdbc.queryShoppingCart("001", "1"));
+
+		/* test for deleteShoppingCart */
+		System.out.println("test for deleteShoppingCart");
+		try {
+			conJdbc.deleteShoppingCart("001", "002","1", 4);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
-		/* test for deleteShoppingCart */
-//		System.out.println("test for deleteShoppingCart");
-//		try {
-//			conJdbc.deleteShoppingCart("001", "001", 4);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
+		System.out.println(conJdbc.queryShoppingCart("001", "1"));
+		
 		
 		System.out.println("Total Price for 1 is " + conJdbc.getPrice("001", "1"));
 		System.out.println("Total Price for 2 is " + conJdbc.getPrice("001", "2"));
+
 		
-		System.out.println(conJdbc.queryShoppingCart("001","1"));
 
 		conJdbc = null;
-    }
+	}
+
+	/**
+	 * Rigorous Test :-)
+	 */
+	@Test
+	public void shouldAnswerWithTrue() {
+
+	}
 }

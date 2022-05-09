@@ -11,7 +11,9 @@ mysql> use se
 Database changed
 ```
 
-<img src="https://s2.loli.net/2022/05/07/FgGBVzX5leHLbfP.png" alt="软工前端table" style="zoom:80%;" />
+<img src="https://gitee.com/zjg_lz/pic-go/raw/master/static/%E8%BD%AF%E5%B7%A5%E5%89%8D%E7%AB%AFtable.png" alt="软工前端table" style="zoom:80%;" />
+
+
 
 **创建表的`sql`语句请看`medicine.sql`**
 

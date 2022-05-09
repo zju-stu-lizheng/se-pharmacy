@@ -52,6 +52,26 @@ public class MyJDBC {
 	}
 
 	/**
+	 * 删除表格内容，方便下次进行测试
+	 * 
+	 * @param tableString : 表名
+	 */
+	public void doDeleteTable(String tableString) {
+		try {
+			Statement statement = connection.createStatement();
+			statement.executeUpdate("DELETE FROM " + tableString + ";");
+			connection.commit();
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * 连接JDBC数据库
 	 */
 	public static void connectDatabase() {
@@ -396,7 +416,9 @@ public class MyJDBC {
 	 */
 	public String queryShoppingCart(String user_id, String branch_name) {
 		String sqlExecutionString = String.format(
-				"select * from shoppingCart natural join medicine where user_id = '%s' and medicine_id = id and storehouse_id = '%s';", user_id,branch_name);
+				"select * from shoppingCart natural join medicine where user_id = '%s' and medicine_id = id and storehouse_id = '%s' group by storehouse_id,user_id,medicine_id;",
+				user_id, branch_name);
+//		System.out.println(sqlExecutionString);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -434,6 +456,7 @@ public class MyJDBC {
 				i++;
 			}
 			queryResultBuffer.append("]");
+			// 账单
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -443,7 +466,7 @@ public class MyJDBC {
 	// To do list: 根据有效日期和购物车中药品,返回一个ArrayList<MedicineBillEntry> bill;
 	public ArrayList<MedicineBillEntry> getBillEntries(String user_id) {
 		ArrayList<MedicineBillEntry> list = new ArrayList<MedicineBillEntry>();
-		ResultSet rs,dateResultSet;
+		ResultSet rs, dateResultSet;
 		// 从购物车中搜索得到该用户需要买的药
 		String sqlExecutionString = String.format("select * from shoppingCart where user_id = '%s';", user_id);
 		try (Statement stmt = connection.createStatement()) {
@@ -475,7 +498,7 @@ public class MyJDBC {
 		}
 		return list;
 	}
-	
+
 	/**
 	 * 往购物车内插入一条药品信息 : 将数量设定成指定的数量
 	 * 
@@ -489,11 +512,44 @@ public class MyJDBC {
 	public boolean setShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
 			throws SQLException {
 		String sqlExecutionString = "";
+		String sqlQueryString = "";
 		ResultSet resultSet;
 		Statement statement;
+		Boolean hasBillBoolean;
+
 		try {
 			// 获取执行sql语句的statement对象
 			statement = connection.createStatement();
+			// 第一步:判断该用户在该药房是否有未支付的账单.如果有：获取该账单的账单号;如果无：新建一个账单，获取这个账单的账单号
+			sqlQueryString = String.format(
+					"SELECT bill_id FROM bill WHERE user_id = '%s' AND storehouse_id = '%s' AND isPaid = 0;", user_id,
+					storehouse_id);
+			resultSet = statement.executeQuery(sqlQueryString);
+			int bill_id = -1;
+			if (!resultSet.next()) {
+				hasBillBoolean = false;
+			} else {
+				hasBillBoolean = true;
+				bill_id = Integer.valueOf(resultSet.getString(1));
+			}
+
+			if (hasBillBoolean == false) {
+				sqlExecutionString = String.format("INSERT INTO bill VALUES(null,'%s','%s',0);", user_id,
+						storehouse_id);
+//				System.out.println(sqlExecutionString);
+				statement.executeUpdate(sqlExecutionString);
+				connection.commit();
+
+				resultSet = statement.executeQuery(sqlQueryString);
+				if (!resultSet.next()) {
+					hasBillBoolean = false;
+				} else {
+					hasBillBoolean = true;
+					bill_id = Integer.valueOf(resultSet.getString(1));
+				}
+			}
+
+			// 第二步: 往shoppingcart中插入该条数据
 			sqlExecutionString = String.format(
 					"SELECT SUM(stock) FROM medicine WHERE id = '%s' AND storehouse_id = '%s' GROUP BY id;",
 					medicine_id, storehouse_id);
@@ -519,16 +575,16 @@ public class MyJDBC {
 					return false;
 				// 更新购物车的记录
 				sqlExecutionString = String.format(
-						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id = '%s';",
-						num, user_id, medicine_id, storehouse_id);
+						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id = '%s' AND bill_id = %d;",
+						num, user_id, medicine_id, storehouse_id, bill_id);
 				statement.executeUpdate(sqlExecutionString);
 			} else {
 				// 如果购物车数量大于库存，返回false
 				if (stock < num)
 					return false;
 				// 将记录插入到购物车表中
-				sqlExecutionString = String.format("INSERT INTO shoppingCart VALUES('%s','%s', %d,'%s');", user_id,
-						medicine_id, num, storehouse_id);
+				sqlExecutionString = String.format("INSERT INTO shoppingCart VALUES('%s','%s', %d,'%s',%d);", user_id,
+						medicine_id, num, storehouse_id, bill_id);
 				statement.executeUpdate(sqlExecutionString);
 			}
 			// 成功则提交
@@ -555,17 +611,49 @@ public class MyJDBC {
 	public boolean addShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
 			throws SQLException {
 		String sqlExecutionString = "";
+		String sqlQueryString = "";
 		ResultSet resultSet;
 		Statement statement;
+		Boolean hasBillBoolean;
+
 		try {
 			// 获取执行sql语句的statement对象
 			statement = connection.createStatement();
+			// 第一步:判断该用户在该药房是否有未支付的账单.如果有：获取该账单的账单号;如果无：新建一个账单，获取这个账单的账单号
+			sqlQueryString = String.format(
+					"SELECT bill_id FROM bill WHERE user_id = '%s' AND storehouse_id = '%s' AND isPaid = 0;", user_id,
+					storehouse_id);
+			resultSet = statement.executeQuery(sqlQueryString);
+			int bill_id = -1;
+			if (!resultSet.next()) {
+				hasBillBoolean = false;
+			} else {
+				hasBillBoolean = true;
+				bill_id = Integer.valueOf(resultSet.getString(1));
+			}
+
+			if (hasBillBoolean == false) {
+				sqlExecutionString = String.format("INSERT INTO bill VALUES(null,'%s','%s',0);", user_id,
+						storehouse_id);
+//				System.out.println(sqlExecutionString);
+				statement.executeUpdate(sqlExecutionString);
+				connection.commit();
+
+				resultSet = statement.executeQuery(sqlQueryString);
+				if (!resultSet.next()) {
+					hasBillBoolean = false;
+				} else {
+					hasBillBoolean = true;
+					bill_id = Integer.valueOf(resultSet.getString(1));
+				}
+			}
+
+			// 第二步: 往shoppingcart中插入该条数据
 			sqlExecutionString = String.format(
 					"SELECT SUM(stock) FROM medicine WHERE id = '%s' AND storehouse_id = '%s' GROUP BY id;",
 					medicine_id, storehouse_id);
 			// 查询该药品的库存
 			resultSet = statement.executeQuery(sqlExecutionString);
-			
 			// 判断是否存在该药品，若不存在返回false
 			if (!resultSet.next()) {
 				return false;
@@ -581,26 +669,22 @@ public class MyJDBC {
 					medicine_id, user_id, storehouse_id));
 			// 判断是否存在该药品
 			if (resultSet.next()) {
-				System.out.println("in if");
-				// 更新num
 				num += Integer.valueOf(resultSet.getString(1));
-				System.out.println("num = "+num + ";stock = "+stock);
 				// 如果购物车数量大于库存，返回false
 				if (stock < num)
 					return false;
 				// 更新购物车的记录
 				sqlExecutionString = String.format(
-						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id = '%s';",
-						num, user_id, medicine_id, storehouse_id);
+						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id = '%s' AND bill_id = %d;",
+						num, user_id, medicine_id, storehouse_id, bill_id);
 				statement.executeUpdate(sqlExecutionString);
 			} else {
-				System.out.println("in else");
 				// 如果购物车数量大于库存，返回false
 				if (stock < num)
 					return false;
 				// 将记录插入到购物车表中
-				sqlExecutionString = String.format("INSERT INTO shoppingCart VALUES('%s','%s', %d,'%s');", user_id,
-						medicine_id, num, storehouse_id);
+				sqlExecutionString = String.format("INSERT INTO shoppingCart VALUES('%s','%s', %d,'%s',%d);", user_id,
+						medicine_id, num, storehouse_id, bill_id);
 				statement.executeUpdate(sqlExecutionString);
 			}
 			// 成功则提交
@@ -616,6 +700,7 @@ public class MyJDBC {
 
 	/**
 	 * 从购物车中减少要购买的药品的数量
+	 * 
 	 * @param user_id       : 用户 id
 	 * @param medicine_id   : 药品 id
 	 * @param storehouse_id : 药房 id
@@ -626,11 +711,43 @@ public class MyJDBC {
 	public boolean deleteShoppingCart(String user_id, String medicine_id, String storehouse_id, int num)
 			throws SQLException {
 		String sqlExecutionString = "";
+		String sqlQueryString = "";
 		ResultSet resultSet;
 		Statement statement;
+		Boolean hasBillBoolean;
 		try {
 			// 获取执行sql语句的statement对象
 			statement = connection.createStatement();
+			// 第一步:判断该用户在该药房是否有未支付的账单.如果有：获取该账单的账单号;如果无：新建一个账单，获取这个账单的账单号
+			sqlQueryString = String.format(
+					"SELECT bill_id FROM bill WHERE user_id = '%s' AND storehouse_id = '%s' AND isPaid = 0;", user_id,
+					storehouse_id);
+			resultSet = statement.executeQuery(sqlQueryString);
+			int bill_id = -1;
+			if (!resultSet.next()) {
+				hasBillBoolean = false;
+			} else {
+				hasBillBoolean = true;
+				bill_id = Integer.valueOf(resultSet.getString(1));
+			}
+
+			if (hasBillBoolean == false) {
+				sqlExecutionString = String.format("INSERT INTO bill VALUES(null,'%s','%s',0);", user_id,
+						storehouse_id);
+//							System.out.println(sqlExecutionString);
+				statement.executeUpdate(sqlExecutionString);
+				connection.commit();
+
+				resultSet = statement.executeQuery(sqlQueryString);
+				if (!resultSet.next()) {
+					hasBillBoolean = false;
+				} else {
+					hasBillBoolean = true;
+					bill_id = Integer.valueOf(resultSet.getString(1));
+				}
+			}
+
+			// 第二步: 往shoppingcart中修改药品数量
 			// 查询该药品的在购物车中的数量
 			resultSet = statement.executeQuery(String.format(
 					"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s';",
@@ -647,14 +764,14 @@ public class MyJDBC {
 			if (num == 0) {
 				// 将记录从购物车表中删除
 				sqlExecutionString = String.format(
-						"DELETE FROM shoppingCart WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id='%s';",
-						user_id, medicine_id, storehouse_id);
+						"DELETE FROM shoppingCart WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id='%s' and bill_id = %d;",
+						user_id, medicine_id, storehouse_id,bill_id);
 				statement.executeUpdate(sqlExecutionString);
 			} else {
 				// 将记录更新
 				sqlExecutionString = String.format(
-						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine='%s' AND storehouse_id = '%s';",
-						num, user_id, medicine_id, storehouse_id);
+						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id = '%s' and bill_id = %d;",
+						num, user_id, medicine_id, storehouse_id,bill_id);
 				statement.executeUpdate(sqlExecutionString);
 			}
 			// 成功则提交
@@ -670,6 +787,7 @@ public class MyJDBC {
 
 	/**
 	 * 获取购物车的总价
+	 * 
 	 * @param user_id       : 用户 id
 	 * @param storehouse_id : 药房 id
 	 * @return 总价:float

@@ -33,10 +33,21 @@ create table `log`(
     foreign key (ano) references administrator(ano)
     )engine=InnoDB default charset= utf8;
 
+create table `Bill`(
+    `bill_id` int auto_increment,
+    `user_id` char(10),
+    `storehouse_id` varchar(100),
+    `isPaid` tinyint(1),
+    primary key(bill_id)
+)engine=InnoDB default charset= utf8;
+
 create table shoppingCart(
 	`user_id` char(10),
 	`medicine_id` char(10),
 	`num` int,
     `storehouse_id` varchar(100),
-	primary key(user_id,medicine_id,storehouse_id)
+    `bill_id` int,
+	primary key(user_id,medicine_id,storehouse_id,bill_id),
+    foreign key (bill_id) references Bill(bill_id)
 )engine=InnoDB default charset= utf8;
+
