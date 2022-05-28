@@ -450,33 +450,115 @@ public class MyJDBC {
 	}
 
 	/**
+	 * To do list : 返回格式
+	 */
+
+	/**
 	 * 查询目标用户购物车中的药品列表
 	 * 
 	 * @param user_id     : 用户 id
 	 * @param branch_name : 药房 id
 	 * @return : list格式的药品记录
 	 */
-	public static String queryShoppingCart(String user_id, String branch_name) {
+	public static String getShoppingCart(String user_id, String branch_name) {
+		// 第一步，根据目标用户和目标药房获取所有的账单号
 		String sqlQueryString = String.format(
-				"select * from shoppingCart natural join medicine where user_id = '%s' and medicine_id = id and storehouse_id = '%s' group by storehouse_id,user_id,medicine_id;",
-				user_id, branch_name);
-//		System.out.println(sqlQueryString);
-		StringBuffer BillItemBuffer = new StringBuffer("[");
-		StringBuffer queryResultBuffer = new StringBuffer();
-		int i = 0, j = 0;
-		String tmpString;
+				"select distinct bill_id from bill where user_id = \"%s\" and storehouse_id = \"%s\";", user_id,
+				branch_name);
+		int bill_id = -1;
+		int i = 0;
+		StringBuffer bills = new StringBuffer("[");
+		String bill;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
 			while (rs.next()) {
-				/* 根据 属性获取该条记录相应的值 */
-				String id = rs.getString("medicine_id");
-				String brand = rs.getString("brand");
-				String name = rs.getString("name");
-				tmpString = rs.getString("function");
-				float price = rs.getFloat("price");
+				bill_id = rs.getInt("bill_id");
+				// 第二步，针对每一个账单需要获取药品的相关信息
+				String billItemInfo = getBillItems(bill_id);
+				// 第三步，获取时间，排队号，柜台号
+				String order_date = "";							//获取时间
+				int isPaid = 0;
+				Statement stmt2 = connection.createStatement();
+				sqlQueryString = String.format(
+						"select order_date,isPaid from bill where bill_id = %d;", bill_id);
+				ResultSet billResult = stmt2.executeQuery(sqlQueryString);
+				if(billResult.next()) {
+					order_date = billResult.getString("order_date");
+					isPaid = billResult.getInt("isPaid");
+				}
+				int qid = -1,wid = -1;
+				if(isPaid == 1) {	// 判断ispaid,未支付返回-1
+					sqlQueryString = String.format(
+							"select qid from Queue where bill_id = %d;", bill_id);
+					billResult = stmt2.executeQuery(sqlQueryString);
+					if(billResult.next()) {
+						qid = billResult.getInt("qid");
+					}
+					sqlQueryString = String.format(
+							"select wid from Window where bill_id = %d;", bill_id);
+					billResult = stmt2.executeQuery(sqlQueryString);
+					if(billResult.next()) {
+						wid = billResult.getInt("wid");
+					}
+				}
+				//第四步，组合账单对应的药品信息
+				bill = "[" + billItemInfo + ",\"" + order_date + "\",\"" + bill_id + "\"," + qid + "," + wid + "]";
+				if(i == 0) {
+					bills.append(bill);
+				}else {
+					bills.append(","+bill);
+				}
+			}
+			bills.append("]");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return bills.toString();
+	}
+
+	/**
+	 * 根据账单号 获取具体需要药品信息
+	 * 
+	 * @param bill_id : 账单号
+	 * @return [
+	 *         ["002","国药","头孢","头孢就酒，越喝越勇","一日三次","三高人群",24.0,"https://s2.loli.net/2022/05/06/.png",10,0],...
+	 *         ]
+	 *         medicine_id,brand,name,function,dosage,banned,price,url,num,isprescription
+	 */
+	public static String getBillItems(int bill_id) {
+		StringBuffer BillItemBuffer = new StringBuffer("[");
+		// 从购物车中搜索得到该用户需要买的药
+		String sqlQueryString = String.format("select * from bill natural join shoppingCart where bill_id = %d;", bill_id);
+		String tmpString;
+		int i = 0, j = 0;
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			while (rs.next()) {
+				String medicine_id = rs.getString("medicine_id");
+				String storehouse_id = rs.getString("storehouse_id");
 				int num = rs.getInt("num");
-				StringBuffer function = new StringBuffer("");
-				char[] c = tmpString.toCharArray();
+
+				// 针对每一种药,从所有药品中挑选出保质期最短的药品
+				String sqlQueryString2 = String.format(
+						"select * from medicine natural join picture where id = '%s' AND storehouse_id = '%s' ORDER BY effective_date ASC;",
+						medicine_id, storehouse_id);
+				// 执行搜索语句，我只取第一条记录
+				Statement stmt2 = connection.createStatement();
+				ResultSet dateResultSet = stmt2.executeQuery(sqlQueryString2);
+				dateResultSet.next();
+				/* 根据 属性获取该条记录相应的值 */
+				String brand = dateResultSet.getString("brand");
+				String name = dateResultSet.getString("name");
+				String _function = dateResultSet.getString("function");
+				String dosage = dateResultSet.getString("dosage");
+				String banned = dateResultSet.getString("banned");
+				float price = dateResultSet.getFloat("price");
+				String url = dateResultSet.getString("url");
+				int isprescription = dateResultSet.getInt("prescription");
+
+				StringBuffer function = new StringBuffer(""); // 转义
+				char[] c = _function.toCharArray();
 
 				for (j = 0; j < c.length; j++) {
 					if (c[j] == '"') {
@@ -487,42 +569,44 @@ public class MyJDBC {
 						function.append(c[j]);
 					}
 				}
+				// medicine_id,brand,name,function,dosage,banned,price,url,num,isprescription
 				if (i == 0)
-					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + price + ","
-							+ num + "]";
+					tmpString = "[\"" + medicine_id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\""
+							+ dosage + "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + num + ","
+							+ isprescription + "]";
 				else {
-					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + price
-							+ "," + num + "]";
+					tmpString = ",[\"" + medicine_id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\""
+							+ dosage + "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + num + ","
+							+ isprescription + "]";
 				}
 				/* 将每条记录添加入 buffer */
 				BillItemBuffer.append(tmpString);
-				queryResultBuffer.append(tmpString);
 				i++;
 			}
-			BillItemBuffer.append("]");
-			// 账单,账单号,排队号,柜台号
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return queryResultBuffer.toString();
+		BillItemBuffer.append("]");
+		return BillItemBuffer.toString();
 	}
 
 	/**
 	 * 根据有效日期和购物车中药品id 获取具体需要出库药品的信息
 	 * 
-	 * @param user_id : 用户 id
+	 * @param user_id       : 用户 id
+	 * @param storehouse_id : 药房 id
 	 * @return ArrayList<MedicineBillEntry> bill;
 	 */
-	public static ArrayList<MedicineBillEntry> getBillEntries(String user_id) {
+	public static ArrayList<MedicineBillEntry> getBillEntries(String user_id, String storehouse_id) {
 		ArrayList<MedicineBillEntry> list = new ArrayList<MedicineBillEntry>();
 		// 从购物车中搜索得到该用户需要买的药
-		String sqlQueryString = String.format("select * from shoppingCart where user_id = '%s';", user_id);
+		String sqlQueryString = String.format(
+				"select * from shoppingCart where user_id = '%s' and storehouse_id = '%s';", user_id, storehouse_id);
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
 			while (rs.next()) {
 				/* 根据 属性获取该条记录相应的值 */
 				String medicine_id = rs.getString("medicine_id");
-				String storehouse_id = rs.getString("storehouse_id");
 				int num = rs.getInt("num");
 
 				// 针对每一种药,从所有药品中挑选出保质期最短的药品
@@ -546,7 +630,6 @@ public class MyJDBC {
 		return list;
 	}
 
-	// To do List : 如果设置成0，需要删除记录
 	/**
 	 * 往购物车内插入一条药品信息 : 将数量设定成指定的数量
 	 * 
@@ -625,8 +708,8 @@ public class MyJDBC {
 				int stock = Integer.valueOf(resultSet.getString(1));
 				// 查询购物车中是否已经有该药品
 				resultSet = statement.executeQuery(String.format(
-						"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s';",
-						medicine_id, user_id, storehouse_id));
+						"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s' AND bill_id = %d;",
+						medicine_id, user_id, storehouse_id,bill_id));
 				// 判断是否存在该药品
 				if (resultSet.next()) {
 					// 如果购物车数量大于库存，返回false
@@ -728,8 +811,8 @@ public class MyJDBC {
 			int stock = Integer.valueOf(resultSet.getString(1));
 			// 查询购物车中是否已经有该药品
 			resultSet = statement.executeQuery(String.format(
-					"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s';",
-					medicine_id, user_id, storehouse_id));
+					"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s' AND bill_id = %d;",
+					medicine_id, user_id, storehouse_id,bill_id));
 			// 判断是否存在该药品
 			if (resultSet.next()) {
 				num += Integer.valueOf(resultSet.getString(1));
@@ -1039,7 +1122,7 @@ public class MyJDBC {
 	 * @return
 	 * @throws SQLException
 	 */
-	public static boolean buyMedicine(String user_id, String storehouse_id) throws SQLException {
+	public static boolean commitBill(String user_id, String storehouse_id) throws SQLException {
 		String sqlExecutionString = "";
 		String sqlQueryString = "";
 		ResultSet resultSet;
@@ -1073,16 +1156,14 @@ public class MyJDBC {
 						paid_date, bill_id);
 				statement.executeUpdate(sqlExecutionString);
 				// 3. 从库存中取出相应药品
-				ArrayList<MedicineBillEntry> list = getBillEntries(user_id);
+				ArrayList<MedicineBillEntry> list = getBillEntries(user_id, storehouse_id);
 				for (MedicineBillEntry medicineItem : list) {
-					if (medicineItem.storehouse_id == storehouse_id) {
-						// 取出药品
-						sqlExecutionString = String.format(
-								"UPDATE medicine set stock = stock - %d where id = '%s' and effective_date = '%s' and storehouse_id = '%s';",
-								medicineItem.num, medicineItem.medicine_id, medicineItem.effective_date,
-								medicineItem.storehouse_id);
-						statement.executeUpdate(sqlExecutionString);
-					}
+					// 取出药品
+					sqlExecutionString = String.format(
+							"UPDATE medicine set stock = stock - %d where id = '%s' and effective_date = '%s' and storehouse_id = '%s';",
+							medicineItem.num, medicineItem.medicine_id, medicineItem.effective_date,
+							medicineItem.storehouse_id);
+					statement.executeUpdate(sqlExecutionString);
 				}
 				// 4. 存入排队号与窗口号
 				MyWindows.addPerson(bill_id, storehouse_id);
