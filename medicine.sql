@@ -55,3 +55,17 @@ create table `shoppingCart`(
     foreign key (bill_id) references Bill(bill_id)
 )engine=InnoDB default charset= utf8;
 
+create table `Window`(
+    `bill_id` int unique,
+    `storehouse_id` varchar(100),
+    `wid` int,
+    foreign key (bill_id) references Bill(bill_id)
+)engine=InnoDB default charset= utf8;
+
+create table `Queue`(
+    `bill_id` int unique,
+    `storehouse_id` varchar(100),
+    `qid` int auto_increment,
+    primary key(qid),
+    foreign key (bill_id) references Bill(bill_id)
+)engine=InnoDB default charset= utf8;

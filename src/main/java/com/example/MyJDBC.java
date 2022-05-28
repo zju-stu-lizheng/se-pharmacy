@@ -9,10 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-// To do : bill 增加 订单日期和支付日期(可为空)
-// 1. 订单日期是在新增订单时写入
-// 2. 支付日期是在支付订单时写入
-
 public class MyJDBC {
 
 	/**
@@ -549,6 +545,7 @@ public class MyJDBC {
 		return list;
 	}
 
+	// To do List : 如果设置成0，需要删除记录
 	/**
 	 * 往购物车内插入一条药品信息 : 将数量设定成指定的数量
 	 * 
@@ -876,6 +873,156 @@ public class MyJDBC {
 		return sum;
 	}
 
+	// To do List: 增加对于数据库表 Window 以及 Queue的操作
+	/**
+	 * 用户支付完账单后，增加一个排队记录
+	 * 
+	 * @param bill_id       : 账单号
+	 * @param storehouse_id : 药房号
+	 * @return : true(插入成功)/false(插入失败)
+	 */
+	public static boolean addQueue(int bill_id, String storehouse_id) {
+		Statement statement;
+		try {
+			statement = connection.createStatement();
+			statement.executeUpdate(
+					"INSERT INTO Queue (bill_id,storehouse_id)" + " VALUES(" + bill_id + ",'" + storehouse_id + "');");
+			connection.commit();
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * 删除排队号 
+	 * 
+	 * @param bill_id       : 账单号
+	 * @return : true(刪除成功)/false(刪除失败)
+	 */
+	public static boolean deleteQueue(int bill_id) {
+		Statement statement;
+		try {
+			statement = connection.createStatement();
+			statement.executeUpdate(
+					"Delete From Queue where bill_id = " + bill_id + ";");
+			connection.commit();
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 删除窗口号 
+	 * 
+	 * @param bill_id       : 账单号
+	 * @return : true(刪除成功)/false(刪除失败)
+	 */
+	public static boolean deleteWindow(int bill_id) {
+		Statement statement;
+		try {
+			statement = connection.createStatement();
+			statement.executeUpdate(
+					"Delete From Window where bill_id = " + bill_id + ";");
+			connection.commit();
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 调度程序调度取药窗口，将该记录存入数据库
+	 * 
+	 * @param bill_id       : 账单号
+	 * @param storehouse_id : 药房号
+	 * @param wid           : 排队号
+	 * @return : true(插入成功)/false(插入失败)
+	 */
+	public static boolean addWindow(int bill_id, String storehouse_id, int wid) {
+		Statement statement;
+		try {
+			statement = connection.createStatement();
+			statement.executeUpdate("INSERT INTO Window (bill_id,storehouse_id,wid)" + " VALUES(" + bill_id + ",'"
+					+ storehouse_id + "'," + wid + ");");
+			connection.commit();
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * 根据窗口号返回等待的人数
+	 * 
+	 * @param storehouse_id
+	 * @param wid
+	 * @return
+	 */
+	public static int searchWindowPeople(String storehouse_id, int wid) {
+		int count = 0;
+		String sqlQueryString = String.format(
+				"select count(bill_id) as cnt from window where storehouse_id='%s' and wid=%d;", storehouse_id, wid);
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			if (rs.next()) {
+				/* 根据 属性获取该条记录相应的值 */
+				count = rs.getInt("cnt");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return count;
+	}
+
+	/**
+	 * 根据窗口号返回处于等待状态下的患者购买的药品数量
+	 * 
+	 * @param storehouse_id
+	 * @param wid
+	 * @return
+	 */
+	public static int searchWindowMedicine(String storehouse_id, int wid) {
+		int count = 0;
+		String sqlQueryString = String.format(
+				"select sum(num) as num_medicine from bill natural join shoppingCart natural join window where storehouse_id='%s' and wid=%d;", storehouse_id, wid);
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			if (rs.next()) {
+				/* 根据 属性获取该条记录相应的值 */
+				count = rs.getInt("num_medicine");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return count;
+	}
+	
 	/**
 	 * 用户支付订单(Bill)，药品库存需要对应减少，支付完的订单需要进行标记
 	 * 

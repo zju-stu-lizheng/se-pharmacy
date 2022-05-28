@@ -104,7 +104,7 @@ public class MyWindows {
      * @param medicine_bill ：药单
      * @param window_no     ：加入的窗口号
      */
-    static int  addPerson(String bill_id,String house_id) {
+    static int  addPerson(int bill_id,String house_id) {
         if(MyJDBC.addQueue(bill_id,house_id)){
             int window_no=windowSchedule();
             MyJDBC.addWindow(bill_id,house_id,window_no);
@@ -119,7 +119,7 @@ public class MyWindows {
      * @param medicine_bill ：药单
      * @param window_no     ：踢出的窗口号
      */
-    void deletePerson(String bill) {
+    void deletePerson(int bill) {
         MyJDBC.deleteQueue(bill);
         MyJDBC.deleteWindow(bill);
     }
@@ -131,7 +131,7 @@ public class MyWindows {
      * 
      * @param window_no ：踢出的窗口号
      */
-    Vector<Integer> getWindowQueue(int window_no) {
-        return queue.get(window_no);
-    }
+//    Vector<Integer> getWindowQueue(int window_no) {
+//        return queue.get(window_no);
+//    }
 }

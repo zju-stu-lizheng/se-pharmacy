@@ -13,7 +13,7 @@ public class AppTest {
 	/**
 	 * test for 测试入库，加入购物车等操作
 	 */
-	@Test
+//	@Test
 	public void testForMyJDBC() {
 		System.out.println("Welcome to App!");
 
@@ -21,6 +21,8 @@ public class AppTest {
 
 		MyJDBC.doDeleteTable("shoppingcart");
 		MyJDBC.doDeleteTable("medicine");
+		MyJDBC.doDeleteTable("window");
+		MyJDBC.doDeleteTable("Queue");
 //		MyJDBC.doDeleteTable("bill");
 
 		/* test for insert Medicine */
@@ -103,7 +105,7 @@ public class AppTest {
 		/* test for addShoppingCart */
 		System.out.println("test for addshoppingCart");
 		try {
-			assertTrue(MyJDBC.addShoppingCart("001", "002", storeString, 3));
+			assertTrue(MyJDBC.addShoppingCart("002", "002", storeString, 3));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -120,30 +122,39 @@ public class AppTest {
 		System.out.println(MyJDBC.queryShoppingCart("001", storeString));
 
 		/* test for deleteShoppingCart */
-		System.out.println("test for deleteShoppingCart");
-		try {
-			MyJDBC.deleteShoppingCart("001", "002", storeString, 4);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+//		System.out.println("test for deleteShoppingCart");
+//		try {
+//			MyJDBC.deleteShoppingCart("001", "002", storeString, 4);
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
 
-		System.out.println(MyJDBC.queryShoppingCart("001", storeString));
+//		System.out.println(MyJDBC.queryShoppingCart("001", storeString));
 
-		System.out.println("Total Price for 1 is " + MyJDBC.getPrice("001", storeString));
-		System.out.println("Total Price for 2 is " + MyJDBC.getPrice("001", storeString));
+//		System.out.println("Total Price for 1 is " + MyJDBC.getPrice("001", storeString));
+//		System.out.println("Total Price for 2 is " + MyJDBC.getPrice("001", storeString));
 
-		try {
-			System.out.println("buy medicine!");
-			MyJDBC.buyMedicine("001", storeString);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			System.out.println("buy medicine!");
+//			MyJDBC.buyMedicine("001", storeString);
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
 
 		System.out.println("query all branch!");
 		System.out.println(MyJDBC.getAllBranch());
 
 		/* test for query all */
 		System.out.println(MyJDBC.queryMedicine());
+		
+		
+		/* test for MyWindow */
+		System.out.println("test for MyWindow");
+		assertTrue(MyJDBC.addWindow(35, storeString, 2));
+		assertTrue(MyJDBC.addWindow(36, storeString, 2));
+		assertTrue(MyJDBC.addWindow(37, storeString, 3));
+		
+		System.out.println(MyJDBC.searchWindowPeople(storeString, 2));
 	}
 
 	/**
@@ -151,6 +162,10 @@ public class AppTest {
 	 */
 	@Test
 	public void shouldAnswerWithTrue() {
-
+		MyJDBC.connectDatabase();
+		String storeString = "玉古路店";
+		MyJDBC.addQueue(32, storeString);
+		MyJDBC.deleteQueue(32);
+		MyJDBC.deleteWindow(35);
 	}
 }
