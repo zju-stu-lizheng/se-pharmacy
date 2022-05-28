@@ -5,6 +5,8 @@ create table `medicine`(
     `brand` varchar(100),
     `name` varchar(100), 
     `function` varchar(100),
+    `dosage` varchar(100),
+    `banned` varchar(100),
     `price` float,
     `stock` int,
     primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;
@@ -37,11 +39,13 @@ create table `Bill`(
     `bill_id` int auto_increment,
     `user_id` char(10),
     `storehouse_id` varchar(100),
+    `order_date` date,/*YYYY-MM-DD*/
+    `paid_date` date,/*YYYY-MM-DD*/
     `isPaid` tinyint(1),
     primary key(bill_id)
 )engine=InnoDB default charset= utf8;
 
-create table shoppingCart(
+create table `shoppingCart`(
 	`user_id` char(10),
 	`medicine_id` char(10),
 	`num` int,

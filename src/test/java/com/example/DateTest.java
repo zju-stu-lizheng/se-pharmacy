@@ -10,7 +10,7 @@ public class DateTest {
 	public void testDate() {
 		//账单号按照创建时间的格式
 		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss");  
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");  
 		System.out.println(formatter.format(date));  
 	}
 }
