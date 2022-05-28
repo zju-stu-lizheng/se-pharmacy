@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Date;
 
 // To do : bill 增加 订单日期和支付日期(可为空)
-		   // 1. 订单日期是在新增订单时写入
-		   // 2. 支付日期是在支付订单时写入
+// 1. 订单日期是在新增订单时写入
+// 2. 支付日期是在支付订单时写入
 
 public class MyJDBC {
 
@@ -25,11 +25,11 @@ public class MyJDBC {
 
 	// sql
 	static Connection connection = null;
-	static String anoString;
+	static String anoString = "001";
 	static Boolean isAdministrator;
-	
+
 	// 日期格式
-	static SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");  
+	static SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
 
 	/**
 	 * 构造函数，为管理员新建一个对象
@@ -196,14 +196,15 @@ public class MyJDBC {
 	 * @param stock          : 药品 库存(入库数量)
 	 * @return : true(插入成功)/false(插入失败)
 	 */
-	public static boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand, String name,
-			String function, String dosage, String banned, float price, int stock) {
+	public static boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand,
+			String name, String function, String dosage, String banned, float price, int stock) {
 		String sqlExecutionString = "";
 		try {
 			Statement statement = connection.createStatement();
 			// insert into database
-			sqlExecutionString = String.format("INSERT INTO medicine VALUES('%s','%s','%s','%s','%s','%s','%s','%s',%f,%d);", id,
-					effective_date, storehouse_id, brand, name, function,dosage,banned, price, stock);
+			sqlExecutionString = String.format(
+					"INSERT INTO medicine VALUES('%s','%s','%s','%s','%s','%s','%s','%s',%f,%d);", id, effective_date,
+					storehouse_id, brand, name, function, dosage, banned, price, stock);
 			statement.executeUpdate(sqlExecutionString);
 			// add a log
 			String option = "insert medicine";
@@ -402,11 +403,11 @@ public class MyJDBC {
 					}
 				}
 				if (i == 0)
-					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + dosage + "\"," + banned + "\"," + price
-							+ ",\"" + url + "\"," + allStock + "]";
+					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + dosage
+							+ "\"," + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
 				else {
-					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + dosage + "\"," + banned + "\"," + price
-							+ ",\"" + url + "\"," + allStock + "]";
+					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + dosage
+							+ "\"," + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
 				}
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
@@ -479,16 +480,16 @@ public class MyJDBC {
 
 	/**
 	 * 根据有效日期和购物车中药品id 获取具体需要出库药品的信息
+	 * 
 	 * @param user_id : 用户 id
 	 * @return ArrayList<MedicineBillEntry> bill;
 	 */
 	public static ArrayList<MedicineBillEntry> getBillEntries(String user_id) {
 		ArrayList<MedicineBillEntry> list = new ArrayList<MedicineBillEntry>();
-		ResultSet rs, dateResultSet;
 		// 从购物车中搜索得到该用户需要买的药
-		String sqlExecutionString = String.format("select * from shoppingCart where user_id = '%s';", user_id);
+		String sqlQueryString = String.format("select * from shoppingCart where user_id = '%s';", user_id);
 		try (Statement stmt = connection.createStatement()) {
-			rs = stmt.executeQuery(sqlExecutionString);
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
 			while (rs.next()) {
 				/* 根据 属性获取该条记录相应的值 */
 				String medicine_id = rs.getString("medicine_id");
@@ -496,11 +497,12 @@ public class MyJDBC {
 				int num = rs.getInt("num");
 
 				// 针对每一种药,从所有药品中挑选出保质期最短的药品
-				sqlExecutionString = String.format(
+				String sqlQueryString2 = String.format(
 						"select brand,effective_date from medicine where id = '%s' AND storehouse_id = '%s' ORDER BY effective_date ASC;",
 						medicine_id, storehouse_id);
 				// 执行搜索语句，我只取第一条记录
-				dateResultSet = stmt.executeQuery(sqlExecutionString);
+				Statement stmt2 = connection.createStatement();
+				ResultSet dateResultSet = stmt2.executeQuery(sqlQueryString2);
 				dateResultSet.next();
 				/* 根据 属性获取该条记录相应的值 */
 				String brand = dateResultSet.getString("brand");
@@ -509,8 +511,6 @@ public class MyJDBC {
 						effective_date);
 				list.add(tmpBillEntry);
 			}
-			rs.close();
-			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -553,10 +553,11 @@ public class MyJDBC {
 
 			if (hasBillBoolean == false) {
 				Date date = new Date();
-				String order_date = formatter.format(date);	//当前日期
-				sqlExecutionString = String.format("INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);", user_id,
-						storehouse_id,order_date);
-				System.out.println("查询bill表的sql语句:"+sqlExecutionString);
+				String order_date = formatter.format(date); // 当前日期
+				sqlExecutionString = String.format(
+						"INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);",
+						user_id, storehouse_id, order_date);
+				System.out.println("查询bill表的sql语句:" + sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
 
@@ -654,9 +655,10 @@ public class MyJDBC {
 
 			if (hasBillBoolean == false) {
 				Date date = new Date();
-				String order_date = formatter.format(date);	//当前日期
-				sqlExecutionString = String.format("INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);", user_id,
-						storehouse_id,order_date);
+				String order_date = formatter.format(date); // 当前日期
+				sqlExecutionString = String.format(
+						"INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);",
+						user_id, storehouse_id, order_date);
 //				System.out.println(sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
@@ -755,9 +757,10 @@ public class MyJDBC {
 
 			if (hasBillBoolean == false) {
 				Date date = new Date();
-				String order_date = formatter.format(date);	//当前日期
-				sqlExecutionString = String.format("INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);", user_id,
-						storehouse_id,order_date);
+				String order_date = formatter.format(date); // 当前日期
+				sqlExecutionString = String.format(
+						"INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);",
+						user_id, storehouse_id, order_date);
 //							System.out.println(sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
@@ -847,7 +850,7 @@ public class MyJDBC {
 	 * @param user_id       : 用户 id
 	 * @param storehouse_id : 药房 id
 	 * @return
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	public static boolean buyMedicine(String user_id, String storehouse_id) throws SQLException {
 		String sqlExecutionString = "";
@@ -858,7 +861,7 @@ public class MyJDBC {
 
 		try {
 			statement = connection.createStatement();
-			//1.根据 用户id和药房id 找出对应的账单
+			// 1.根据 用户id和药房id 找出对应的账单
 			sqlQueryString = String.format(
 					"SELECT bill_id FROM bill WHERE user_id = '%s' AND storehouse_id = '%s' AND isPaid = 0;", user_id,
 					storehouse_id);
@@ -870,21 +873,34 @@ public class MyJDBC {
 				hasBillBoolean = true;
 				bill_id = Integer.valueOf(resultSet.getString(1));
 			}
-			
-			if(hasBillBoolean == false) {
-				//report error
+
+			if (hasBillBoolean == false) {
+				// report error
 				System.out.println("Error:该用户不存在未支付账单");
-			}else {
-				//2. 将该账单置为已支付,并补充支付日期
+			} else {
+				// 2. 将该账单置为已支付,并补充支付日期
 				Date date = new Date();
-				String paid_date = formatter.format(date);	//当前日期
-				sqlExecutionString = String.format("UPDATE bill set isPaid = 1,paid_date='%s' WHERE bill_id='%s';",paid_date, bill_id);
+				String paid_date = formatter.format(date); // 当前日期
+				sqlExecutionString = String.format("UPDATE bill set isPaid = 1,paid_date='%s' WHERE bill_id='%s';",
+						paid_date, bill_id);
 				statement.executeUpdate(sqlExecutionString);
-				//3. 
+				// 3. 从库存中取出相应药品
+				ArrayList<MedicineBillEntry> list = getBillEntries(user_id);
+				for (MedicineBillEntry medicineItem : list) {
+					if (medicineItem.storehouse_id == storehouse_id) {
+						// 取出药品
+						sqlExecutionString = String.format(
+								"UPDATE medicine set stock = stock - %d where id = '%s' and effective_date = '%s' and storehouse_id = '%s';",
+								medicineItem.num, medicineItem.medicine_id, medicineItem.effective_date,
+								medicineItem.storehouse_id);
+						statement.executeUpdate(sqlExecutionString);
+					}
+
+				}
 			}
-			
+
 			connection.commit();
-		}catch (SQLException e1) {
+		} catch (SQLException e1) {
 			e1.printStackTrace();
 			// 失败则事务回滚
 			connection.rollback();

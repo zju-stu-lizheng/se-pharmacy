@@ -45,7 +45,7 @@ create table `Bill`(
     primary key(bill_id)
 )engine=InnoDB default charset= utf8;
 
-create table shoppingCart(
+create table `shoppingCart`(
 	`user_id` char(10),
 	`medicine_id` char(10),
 	`num` int,
