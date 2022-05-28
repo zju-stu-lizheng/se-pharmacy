@@ -5,6 +5,8 @@ create table `medicine`(
     `brand` varchar(100),
     `name` varchar(100), 
     `function` varchar(100),
+    `dosage` varchar(100),
+    `banned` varchar(100),
     `price` float,
     `stock` int,
     primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;

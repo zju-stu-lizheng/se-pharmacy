@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 import com.mysql.cj.exceptions.RSAException;
 
+// To do : medicine 加上 用法用量 和 禁用人群 两个属性 string
+
 public class MyJDBC {
 
 	/**
@@ -19,7 +21,7 @@ public class MyJDBC {
 	static final String USERNAME = "root";
 	static final String PASSWD = "lizheng";
 
-	//sql
+	// sql
 	static Connection connection = null;
 	String anoString;
 	Boolean isAdministrator;
@@ -183,18 +185,20 @@ public class MyJDBC {
 	 * @param brand          : 药品 厂商
 	 * @param name           : 药品 名字
 	 * @param function       : 药品 作用
+	 * @param dosage         : 用法用量
+	 * @param banned         : 禁用人群
 	 * @param price          : 药品 单价
 	 * @param stock          : 药品 库存(入库数量)
 	 * @return : true(插入成功)/false(插入失败)
 	 */
 	public boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand, String name,
-			String function, float price, int stock) {
+			String function, String dosage, String banned, float price, int stock) {
 		String sqlExecutionString = "";
 		try {
 			Statement statement = connection.createStatement();
 			// insert into database
-			sqlExecutionString = String.format("INSERT INTO medicine VALUES('%s','%s','%s','%s','%s','%s',%f,%d);", id,
-					effective_date, storehouse_id, brand, name, function, price, stock);
+			sqlExecutionString = String.format("INSERT INTO medicine VALUES('%s','%s','%s','%s','%s','%s','%s','%s',%f,%d);", id,
+					effective_date, storehouse_id, brand, name, function,dosage,banned, price, stock);
 			statement.executeUpdate(sqlExecutionString);
 			// add a log
 			String option = "insert medicine";
@@ -363,7 +367,7 @@ public class MyJDBC {
 	 * @return : list(python)格式的药品记录
 	 */
 	public String queryMedicine() {
-		String sqlExecutionString = "select id,name,brand,function,price,url,sum(stock) as allStock from medicine natural join picture group by name,brand;";
+		String sqlExecutionString = "select id,name,brand,function,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture group by name,brand;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -374,6 +378,8 @@ public class MyJDBC {
 				String id = rs.getString("id");
 				String brand = rs.getString("brand");
 				String name = rs.getString("name");
+				String dosage = rs.getString("dosage");
+				String banned = rs.getString("banned");
 				tmpString = rs.getString("function");
 				String url = rs.getString("url");
 				float price = rs.getFloat("price");
@@ -391,10 +397,10 @@ public class MyJDBC {
 					}
 				}
 				if (i == 0)
-					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + price
+					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + dosage + "\"," + banned + "\"," + price
 							+ ",\"" + url + "\"," + allStock + "]";
 				else {
-					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + price
+					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + dosage + "\"," + banned + "\"," + price
 							+ ",\"" + url + "\"," + allStock + "]";
 				}
 				/* 将每条记录添加入 buffer */
@@ -455,6 +461,7 @@ public class MyJDBC {
 				}
 				/* 将每条记录添加入 buffer */
 				BillItemBuffer.append(tmpString);
+				queryResultBuffer.append(tmpString);
 				i++;
 			}
 			BillItemBuffer.append("]");
@@ -767,13 +774,13 @@ public class MyJDBC {
 				// 将记录从购物车表中删除
 				sqlExecutionString = String.format(
 						"DELETE FROM shoppingCart WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id='%s' and bill_id = %d;",
-						user_id, medicine_id, storehouse_id,bill_id);
+						user_id, medicine_id, storehouse_id, bill_id);
 				statement.executeUpdate(sqlExecutionString);
 			} else {
 				// 将记录更新
 				sqlExecutionString = String.format(
 						"UPDATE shoppingCart set num = %d WHERE user_id='%s' AND medicine_id='%s' AND storehouse_id = '%s' and bill_id = %d;",
-						num, user_id, medicine_id, storehouse_id,bill_id);
+						num, user_id, medicine_id, storehouse_id, bill_id);
 				statement.executeUpdate(sqlExecutionString);
 			}
 			// 成功则提交
@@ -819,7 +826,14 @@ public class MyJDBC {
 		return sum;
 	}
 
-	public boolean buyMedicine(String user_id) {
+	/**
+	 * 用户支付订单(Bill)，药品库存需要对应减少，支付完的订单需要进行标记
+	 * 
+	 * @param user_id       : 用户 id
+	 * @param storehouse_id : 药房 id
+	 * @return
+	 */
+	public boolean buyMedicine(String user_id, String storehouse_id) {
 		return true;
 	}
 }

@@ -30,9 +30,11 @@ public class AppTest {
 		String brandString = "国药";
 		String name = "阿司匹林";
 		String function = "解热镇痛";
+		String dosage = "一日三次";
+		String banned = "三高人群"; 
 		float price = 25.0f;
 		int stock = 20;
-		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
+		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function,dosage,banned, price, stock);
 
 		id = "002";
 		effString = "2022-05-30";
@@ -42,7 +44,7 @@ public class AppTest {
 		function = "头孢就酒，越喝越勇";
 		price = 24.0f;
 		stock = 10;
-		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
+		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function,dosage,banned, price, stock);
 
 		id = "001";
 		effString = "2022-06-29";
@@ -52,7 +54,7 @@ public class AppTest {
 		function = "解热镇痛";
 		price = 25.0f;
 		stock = 10;
-		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function, price, stock);
+		conJdbc.insertMedicine(id, effString, storeString, brandString, name, function,dosage,banned, price, stock);
 
 		/* test for query all */
 		System.out.println(conJdbc.queryMedicine());
