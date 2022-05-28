@@ -20,7 +20,7 @@ public class AppTest {
 
 		conJdbc.doDeleteTable("shoppingcart");
 		conJdbc.doDeleteTable("medicine");
-		conJdbc.doDeleteTable("bill");
+//		conJdbc.doDeleteTable("bill");
 
 		/* test for insert Medicine */
 		System.out.println("test for insert Medicine");
@@ -135,7 +135,11 @@ public class AppTest {
 		System.out.println("Total Price for 1 is " + conJdbc.getPrice("001", "1"));
 		System.out.println("Total Price for 2 is " + conJdbc.getPrice("001", "2"));
 
-		
+		try {
+			conJdbc.buyMedicine("001", "1");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
 		conJdbc = null;
 	}

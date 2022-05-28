@@ -843,9 +843,48 @@ public class MyJDBC {
 	 * @param user_id       : 用户 id
 	 * @param storehouse_id : 药房 id
 	 * @return
+	 * @throws SQLException 
 	 */
-	public boolean buyMedicine(String user_id, String storehouse_id) {
-		
+	public boolean buyMedicine(String user_id, String storehouse_id) throws SQLException {
+		String sqlExecutionString = "";
+		String sqlQueryString = "";
+		ResultSet resultSet;
+		Statement statement;
+		Boolean hasBillBoolean;
+
+		try {
+			statement = connection.createStatement();
+			//1.根据 用户id和药房id 找出对应的账单
+			sqlQueryString = String.format(
+					"SELECT bill_id FROM bill WHERE user_id = '%s' AND storehouse_id = '%s' AND isPaid = 0;", user_id,
+					storehouse_id);
+			resultSet = statement.executeQuery(sqlQueryString);
+			int bill_id = -1;
+			if (!resultSet.next()) {
+				hasBillBoolean = false;
+			} else {
+				hasBillBoolean = true;
+				bill_id = Integer.valueOf(resultSet.getString(1));
+			}
+			
+			if(hasBillBoolean == false) {
+				//report error
+				System.out.println("Error:该用户不存在未支付账单");
+			}else {
+				//2. 将该账单置为已支付,并补充支付日期
+				Date date = new Date();
+				String paid_date = formatter.format(date);	//当前日期
+				sqlExecutionString = String.format("UPDATE bill set isPaid = 1,paid_date='%s' WHERE bill_id='%s';",paid_date, bill_id);
+				statement.executeUpdate(sqlExecutionString);
+			}
+			
+			connection.commit();
+		}catch (SQLException e1) {
+			e1.printStackTrace();
+			// 失败则事务回滚
+			connection.rollback();
+			return false;
+		}
 		return true;
 	}
 }
