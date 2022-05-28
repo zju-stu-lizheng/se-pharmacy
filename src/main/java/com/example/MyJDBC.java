@@ -368,17 +368,49 @@ public class MyJDBC {
 	}
 
 	/**
+	 * 返回医院所有分部
+	 * 
+	 * @return "[\"Branch1\", \"Branch2\"]"
+	 */
+	public static String getAllBranch() {
+		// 从medicine表中获取 : storehouse_id
+		String sqlQueryString = "select distinct storehouse_id from medicine;";
+		StringBuffer queryResultBuffer = new StringBuffer("[");
+		int i = 0;
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			while (rs.next()) {
+				/* 根据 属性获取该条记录相应的值 */
+				String storehouse_id = rs.getString("storehouse_id");
+
+				if (i == 0)
+					queryResultBuffer.append("\"" + storehouse_id + "\"");
+				else {
+					queryResultBuffer.append(",\"" + storehouse_id + "\"");
+				}
+				/* 将每条记录添加入 buffer */
+				i++;
+			}
+			queryResultBuffer.append("]");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return queryResultBuffer.toString();
+	}
+
+	/**
 	 * 查询所有药品记录
 	 * 
 	 * @return : list(python)格式的药品记录
 	 */
 	public static String queryMedicine() {
-		String sqlExecutionString = "select id,name,brand,function,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture group by name,brand;";
+		String sqlQueryString = "select id,name,brand,function,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture group by name,brand;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
 		try (Statement stmt = connection.createStatement()) {
-			ResultSet rs = stmt.executeQuery(sqlExecutionString);
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
 			while (rs.next()) {
 				/* 根据 属性获取该条记录相应的值 */
 				String id = rs.getString("id");
@@ -403,11 +435,11 @@ public class MyJDBC {
 					}
 				}
 				if (i == 0)
-					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + dosage
-							+ "\"," + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
+					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
+							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
 				else {
-					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\"," + dosage
-							+ "\"," + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
+					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
+							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
 				}
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
@@ -898,7 +930,6 @@ public class MyJDBC {
 
 				}
 			}
-
 			connection.commit();
 		} catch (SQLException e1) {
 			e1.printStackTrace();
