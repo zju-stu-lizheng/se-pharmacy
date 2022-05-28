@@ -162,10 +162,21 @@ public class AppTest {
 	 */
 	@Test
 	public void shouldAnswerWithTrue() {
-		MyJDBC.connectDatabase();
 		String storeString = "玉古路店";
-		MyJDBC.addQueue(32, storeString);
-		MyJDBC.deleteQueue(32);
-		MyJDBC.deleteWindow(35);
+		Manager.setWindow(5, storeString);
+		MyJDBC.connectDatabase();
+		
+		/* test for setShoppingCart */
+		System.out.println("test for setShoppingCart");
+		try {
+			assertTrue(MyJDBC.setShoppingCart("001", "001", storeString, 2));
+			MyJDBC.buyMedicine("001", storeString);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+//		MyJDBC.addQueue(32, storeString);
+//		MyJDBC.deleteQueue(32);
+//		MyJDBC.deleteWindow(35);
 	}
 }

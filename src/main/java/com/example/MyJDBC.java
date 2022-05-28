@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+// To do List : 是否为处方药
+
 public class MyJDBC {
 
 	/**
@@ -1056,6 +1058,7 @@ public class MyJDBC {
 			if (hasBillBoolean == false) {
 				// report error
 				System.out.println("Error:该用户不存在未支付账单");
+				return false;
 			} else {
 				// 2. 将该账单置为已支付,并补充支付日期
 				Date date = new Date();
@@ -1074,8 +1077,9 @@ public class MyJDBC {
 								medicineItem.storehouse_id);
 						statement.executeUpdate(sqlExecutionString);
 					}
-
 				}
+				// 4. 存入排队号与窗口号
+				MyWindows.addPerson(bill_id,storehouse_id); 
 			}
 			connection.commit();
 		} catch (SQLException e1) {

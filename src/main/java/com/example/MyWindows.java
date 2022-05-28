@@ -41,9 +41,10 @@ public class MyWindows {
     static final double time_base = 2;
     static final double take_time = 0.1;
     static String house_id;
-    // 窗口初始化
-    public MyWindows(int n,String house_id) {
-        this.house_id=house_id;
+    
+    // 窗口初始化    
+    public static void setWindowsStatus(int n,String _house_id) {
+    	house_id = _house_id;
         for (int i = 0; i < n; i++)
             windows.add(true);
     }
@@ -104,7 +105,7 @@ public class MyWindows {
      * @param medicine_bill ：药单
      * @param window_no     ：加入的窗口号
      */
-    static int  addPerson(int bill_id,String house_id) {
+    static int addPerson(int bill_id,String house_id) {
         if(MyJDBC.addQueue(bill_id,house_id)){
             int window_no=windowSchedule();
             MyJDBC.addWindow(bill_id,house_id,window_no);

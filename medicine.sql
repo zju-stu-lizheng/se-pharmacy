@@ -9,6 +9,7 @@ create table `medicine`(
     `banned` varchar(100),
     `price` float,
     `stock` int,
+    `prescription` tinyint(1),
     primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;
 
 create table `picture`(
