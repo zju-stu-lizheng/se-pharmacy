@@ -91,7 +91,7 @@ public class MyJSON {
 	 */
 	public static String queryShoppingCartOperate(String user_id, String branch_name) {
 		MyJDBC conJdbc = new MyJDBC();
-		String medicineList = conJdbc.queryShoppingCart(user_id, branch_name);
+		String medicineList = conJdbc.getShoppingCart(user_id, branch_name);
 		/* 发送一个json包 */
 		JSONObject obj = new JSONObject();
 

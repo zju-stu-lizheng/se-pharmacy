@@ -92,6 +92,7 @@ public class AppTest {
 		MyJDBC.connectDatabase();
 
 		String storeString = "玉古路店";
+		Manager.setWindow(5, storeString);
 		
 		MyJDBC.doDeleteTable("shoppingCart");
 		MyJDBC.doDeleteTable("window");
@@ -217,19 +218,5 @@ public class AppTest {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
-		/* test for MyWindow */
-//		System.out.println("test for MyWindow");
-//		assertTrue(MyJDBC.addWindow(35, storeString, 2));
-//		assertTrue(MyJDBC.addWindow(36, storeString, 2));
-//		assertTrue(MyJDBC.addWindow(37, storeString, 3));
-		
-//		System.out.println(MyJDBC.searchWindowPeople(storeString, 2));
-		
-//		System.out.println(MyJDBC.getBillItems(48));
-
-//		MyJDBC.addQueue(32, storeString);
-//		MyJDBC.deleteQueue(32);
-//		MyJDBC.deleteWindow(35);
 	}
 }
