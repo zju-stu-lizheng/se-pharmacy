@@ -56,6 +56,4 @@ public class JsonTest {
 		System.out.println(MyJSON.jsonParser(s5));
 		System.out.println(MyJSON.jsonParser(queryShoppingString));
 	}
-	
-
 }

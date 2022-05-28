@@ -39,6 +39,8 @@ create table `Bill`(
     `bill_id` int auto_increment,
     `user_id` char(10),
     `storehouse_id` varchar(100),
+    `order_date` date,/*YYYY-MM-DD*/
+    `paid_date` date,/*YYYY-MM-DD*/
     `isPaid` tinyint(1),
     primary key(bill_id)
 )engine=InnoDB default charset= utf8;

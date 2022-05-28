@@ -5,11 +5,13 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
-import com.mysql.cj.exceptions.RSAException;
-
-// To do : medicine 加上 用法用量 和 禁用人群 两个属性 string
+// To do : bill 增加 订单日期和支付日期(可为空)
+		   // 1. 订单日期是在新增订单时写入
+		   // 2. 支付日期是在支付订单时写入
 
 public class MyJDBC {
 
@@ -25,6 +27,9 @@ public class MyJDBC {
 	static Connection connection = null;
 	String anoString;
 	Boolean isAdministrator;
+	
+	// 日期格式
+	static SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");  
 
 	/**
 	 * 构造函数，每一个管理员新建一个对象
@@ -543,9 +548,11 @@ public class MyJDBC {
 			}
 
 			if (hasBillBoolean == false) {
-				sqlExecutionString = String.format("INSERT INTO bill VALUES(null,'%s','%s',0);", user_id,
-						storehouse_id);
-//				System.out.println(sqlExecutionString);
+				Date date = new Date();
+				String order_date = formatter.format(date);	//当前日期
+				sqlExecutionString = String.format("INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);", user_id,
+						storehouse_id,order_date);
+				System.out.println("查询bill表的sql语句:"+sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
 
@@ -642,8 +649,10 @@ public class MyJDBC {
 			}
 
 			if (hasBillBoolean == false) {
-				sqlExecutionString = String.format("INSERT INTO bill VALUES(null,'%s','%s',0);", user_id,
-						storehouse_id);
+				Date date = new Date();
+				String order_date = formatter.format(date);	//当前日期
+				sqlExecutionString = String.format("INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);", user_id,
+						storehouse_id,order_date);
 //				System.out.println(sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
@@ -741,8 +750,10 @@ public class MyJDBC {
 			}
 
 			if (hasBillBoolean == false) {
-				sqlExecutionString = String.format("INSERT INTO bill VALUES(null,'%s','%s',0);", user_id,
-						storehouse_id);
+				Date date = new Date();
+				String order_date = formatter.format(date);	//当前日期
+				sqlExecutionString = String.format("INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);", user_id,
+						storehouse_id,order_date);
 //							System.out.println(sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
@@ -834,6 +845,7 @@ public class MyJDBC {
 	 * @return
 	 */
 	public boolean buyMedicine(String user_id, String storehouse_id) {
+		
 		return true;
 	}
 }

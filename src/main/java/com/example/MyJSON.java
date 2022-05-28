@@ -201,7 +201,6 @@ public class MyJSON {
 			default:
 				break;
 			}
-
 		} catch (ParseException pe) {
 			System.out.println("position: " + pe.getPosition());
 			System.out.println(pe);
