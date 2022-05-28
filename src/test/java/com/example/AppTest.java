@@ -13,7 +13,7 @@ public class AppTest {
 	/**
 	 * test for 测试入库，加入购物车等操作
 	 */
-//	@Test
+	@Test
 	public void testForMyJDBC() {
 		System.out.println("Welcome to App!");
 
@@ -37,7 +37,7 @@ public class AppTest {
 		String banned = "三高人群";
 		float price = 25.0f;
 		int stock = 20;
-		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock);
+		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock,0);
 
 		id = "002";
 		effString = "2022-05-30";
@@ -46,7 +46,7 @@ public class AppTest {
 		function = "头孢就酒，越喝越勇";
 		price = 24.0f;
 		stock = 10;
-		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock);
+		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock,0);
 
 		id = "001";
 		effString = "2022-06-29";
@@ -55,7 +55,7 @@ public class AppTest {
 		function = "解热镇痛";
 		price = 25.0f;
 		stock = 10;
-		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock);
+		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock,0);
 
 		/* test for query all */
 		System.out.println(MyJDBC.queryMedicine());
@@ -101,6 +101,15 @@ public class AppTest {
 		}
 
 		System.out.println(MyJDBC.queryShoppingCart("001", storeString));
+		
+		System.out.println("test for setShoppingCart to 0");
+		try {
+			assertTrue(MyJDBC.setShoppingCart("001", "001", storeString, 0));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println(MyJDBC.queryShoppingCart("001", storeString)); 
 
 		/* test for addShoppingCart */
 		System.out.println("test for addshoppingCart");
@@ -110,7 +119,7 @@ public class AppTest {
 			e.printStackTrace();
 		}
 
-		System.out.println(MyJDBC.queryShoppingCart("001", storeString));
+		System.out.println(MyJDBC.queryShoppingCart("002", storeString));
 
 		System.out.println("test for setShoppingCart 2");
 		try {

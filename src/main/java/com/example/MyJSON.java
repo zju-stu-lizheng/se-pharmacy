@@ -27,7 +27,7 @@ public class MyJSON {
 			String name, String function, String dosage, String banned, float price, int stock) {
 		MyJDBC conJdbc = new MyJDBC(ano);
 		Boolean response = conJdbc.insertMedicine(id, effective_date, storehouse_id, brand, name, function, dosage,
-				banned, price, stock);
+				banned, price, stock,0);
 		/* 发送一个json包 */
 		JSONObject obj = new JSONObject();
 
