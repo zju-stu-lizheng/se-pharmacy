@@ -37,21 +37,15 @@ class MedicineBill {
 
 public class MyWindows {
     // 记录估计的等待时间，线程安全 <0 表示窗口关闭
-    Vector<Double> windows = new Vector<Double>();
-    // 窗口等待队列，线程安全
-    Vector<Vector<Integer>> queue = new Vector<Vector<Integer>>();
-    // 订单号，类变量
-    static int sequence_num;
-    final double time_base = 2;
-    final double take_time = 0.1;
-
+    static Vector<Boolean> windows = new Vector<Boolean>();
+    static final double time_base = 2;
+    static final double take_time = 0.1;
+    static String house_id;
     // 窗口初始化
-    public MyWindows(int n) {
-        for (int i = 0; i < n; i++) {
-            windows.add(0.0);
-            queue.add(new Vector<Integer>());
-        }
-        sequence_num = 0;
+    public MyWindows(int n,String house_id) {
+        this.house_id=house_id;
+        for (int i = 0; i < n; i++)
+            windows.add(true);
     }
 
     /**
@@ -60,8 +54,8 @@ public class MyWindows {
      * @param i : 关闭窗口i
      */
     boolean colseWindow(int i) {
-        if (windows.get(i) == 0) {
-            windows.set(i, -1.0);
+        if (MyJDBC.searchWindowPeople(house_id,i) == 0) {
+            windows.set(i, false);
             return true;
         } else
             return false;
@@ -75,12 +69,11 @@ public class MyWindows {
     boolean openWindow(int i) {
         if (i >= windows.size()) {
             for (int j = windows.size(); j < i; j++) {
-                windows.add(-1.0);
-                queue.add(new Vector<Integer>());
+                windows.add(false);
             }
         }
-        if (windows.get(i) == -1.0) {
-            windows.set(i, 0.0);
+        if (!windows.get(i)) {
+            windows.set(i,true);
             return true;
         } else
             return false;
@@ -89,12 +82,16 @@ public class MyWindows {
     /**
      * 选取估计时间最短的窗口
      */
-    int windowSchedule() {
+    static int windowSchedule() {
         double min = 999999999;
         int window_no = -1;
+        double time=0;
         for (int i = 0; i < windows.size(); i++) {
-            if (windows.get(i) >= 0 && min > windows.get(i)) {
-                min = windows.get(i);
+            if(!windows.get(i)) continue;
+            time=time_base*MyJDBC.searchWindowPeople(house_id,i)
+                +take_time*MyJDBC.searchWindowMedicine(house_id,i);
+            if (min > time) {
+                min = time;
                 window_no = i;
             }
         }
@@ -107,14 +104,13 @@ public class MyWindows {
      * @param medicine_bill ：药单
      * @param window_no     ：加入的窗口号
      */
-    void addPerson(MedicineBill medicine_bill, int window_no) {
-        double time = time_base;
-        for (int i = 0; i < medicine_bill.bill.size(); i++) {
-            time += take_time * medicine_bill.bill.get(i).num;
+    static int  addPerson(String bill_id,String house_id) {
+        if(MyJDBC.addQueue(bill_id,house_id)){
+            int window_no=windowSchedule();
+            MyJDBC.addWindow(bill_id,house_id,window_no);
+            return window_no; 
         }
-        time += windows.get(window_no);
-        windows.set(window_no, time);
-        queue.get(window_no).add(medicine_bill.sequence_num);
+        return -1;
     }
 
     /**
@@ -123,23 +119,12 @@ public class MyWindows {
      * @param medicine_bill ：药单
      * @param window_no     ：踢出的窗口号
      */
-    void deletePerson(MedicineBill medicine_bill, int window_no) {
-        double time = time_base;
-        for (int i = 0; i < medicine_bill.bill.size(); i++) {
-            time += take_time * medicine_bill.bill.get(i).num;
-        }
-        time -= windows.get(window_no);
-        windows.set(window_no, time);
-        queue.get(window_no).remove(medicine_bill.sequence_num);
+    void deletePerson(String bill) {
+        MyJDBC.deleteQueue(bill);
+        MyJDBC.deleteWindow(bill);
     }
 
-    /**
-     * 获取药单号
-     */
-    synchronized static int getSequenceNum() {
-        sequence_num++;
-        return sequence_num - 1;
-    }
+
 
     /**
      * 获取该窗口排队的订单
