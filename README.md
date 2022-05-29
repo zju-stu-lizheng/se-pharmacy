@@ -11,7 +11,7 @@ mysql> use se
 Database changed
 ```
 
-<img src="https://gitee.com/zjg_lz/pic-go/raw/master/static/%E8%BD%AF%E5%B7%A5%E5%89%8D%E7%AB%AFtable.png" alt="软工前端table" style="zoom:80%;" />
+<img src="static/软工后端table.png" alt="软工前端table" style="zoom:80%;" />
 
 
 
@@ -27,6 +27,8 @@ delete from medicine;
 delete from administrator;
 delete from shoppingCart;
 delete from picture;
+delete from window;
+delete from queue;
 delete from bill;
 ```
 
@@ -63,12 +65,15 @@ insert into administrator values('001','lizheng','yp','123456');
 	 * @param brand          : 药品 厂商
 	 * @param name           : 药品 名字
 	 * @param function       : 药品 作用
+	 * @param dosage         : 用法用量
+	 * @param banned         : 禁用人群
 	 * @param price          : 药品 单价
 	 * @param stock          : 药品 库存(入库数量)
+	 * @param isPrescription : 是否为处方药 (1:处方药，0：非处方药)
 	 * @return : true(插入成功)/false(插入失败)
 	 */
-public boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand, String name,
-                              String function, float price, int stock);
+	public static boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand,
+			String name, String function, String dosage, String banned, float price, int stock, int isPrescription);
 ```
 
 * 删除一条药品信息
@@ -83,27 +88,38 @@ public boolean insertMedicine(String id, String effective_date, String storehous
 	 * @param stock          : 药品 库存(入库数量)
 	 * @return : true(删除成功)/false(删除失败)
 	 */
-public boolean deleteMedicine(String id, String storehouse_id, String effective_date) throws SQLException;
+	public static boolean deleteMedicine(String id, String storehouse_id, String effective_date) throws SQLException;
 ```
 
 * 查询药品信息
 
-  ```java
-  /**
-  	 * 查询所有药品记录
-  	 * 
-  	 * @return : list(python)格式的药品记录
-  	 */
-  public String queryMedicine();
-  ```
+```java
+/**
+ * 查询所有药品记录
+ * 
+ * @return : list(python)格式的药品记录
+ */
+public String queryMedicine();
+```
 
-返回例子：`[m_id,brand,name,function,price,url,stock]`
+返回例子：`[[m_id,brand,name,function,dosage,banned,price,url,stock],...]`
 
-  ```python
-  [["002","国药","头孢","头孢就酒，越喝越勇",24.0,"https://s2.loli.net/2022/05/06/Fp3MwJu1U8tbi96.png",10],["001","国药","阿司匹林","解热镇痛",25.0,"https://s2.loli.net/2022/05/06/q7ulP6FDjtVOMQE.png",30]]
-  ```
+```python
+[
+	["002","国药","头孢","头孢就酒，越喝越勇","一日三次","三高人群",24.0,"https://s2.loli.net/2022/05/06/.png",10],
+	["001","国药","阿司匹林","解热镇痛","一日三次","三高人群",25.0,"https://s2.loli.net/2022/05/06/.png",50]
+]
+```
+```java
+/**
+ * 查询指定药品id与药房id的药品记录，重载queryMedicine
+ * 
+ * @return : list(python)格式的药品记录
+ */
+public static String queryMedicine(String medicineID, String branchName);
+```
+返回例子与上述一致
 
-  
 
 * 药品出库
 
@@ -140,10 +156,16 @@ public boolean deleteMedicine(String id, String storehouse_id, String effective_
 public String queryShoppingCart(String user_id, String branch_name);
 ```
 
-返回例子：`[m_id,brand,name,function,price,num]`
-
+返回例子：`MediList = [m_id,brand,name,function,dosage,banned,price,url,num]`
+	每个账单是一个列表，第0个位置为药品列表，第1个位置为时间，第2个位置为账单号，第3个位置为排队号，第4个位置为柜台号
   ```python
-  [["001","国药","阿司匹林","解热镇痛",25.0,2],["002","国药","头孢","头孢就酒，越喝越勇",24.0,3]]
+  Cart=[Bill1, Bill2, Bill3]
+  Bill1=[MediList, "U14bTQFS", "2022-5-28", 59, 3]
+  MediList=
+	[
+		["002","国药","头孢","头孢就酒，越喝越勇","一日三次","三高人群",24.0,"https://s2.loli.net/2022/05/06/.png",10],
+		["001","国药","阿司匹林","解热镇痛","一日三次","三高人群",25.0,"https://s2.loli.net/2022/05/06/.png",50]
+	]
   ```
 
 * 加入购物车操作(增量操作)
@@ -224,4 +246,9 @@ public float getPrice(String user_id, String storehouse_id)
 * **Eclipse**中**格式化代码的快捷键**是 Ctrl+Shift+F
 * `git pull` 之前请先`git add.` && `git commit -m "your commit"`
 * 图库使用`sm.ms`
+* 控制台运行
+	```shell
+	javac -cp '.;F:\Code\Java\se-pharmacy\bin\src\main\java\mysql-connector-java-8.0.27.jar' -encoding utf-8 com/example/MyJDBC.java 
+	java -cp '.;F:\Code\Java\se-pharmacy\bin\src\main\java\mysql-connector-java-8.0.27.jar' com/example/MyJDBC
+	```
 
