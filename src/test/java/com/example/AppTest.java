@@ -175,7 +175,7 @@ public class AppTest {
 		System.out.println(MyJDBC.getShoppingCart("001", storeString));
 	}
 	
-	@Test
+//	@Test
 	public void testGETShoppingCart() {
 		System.out.println("Welcome to App!");
 		MyJDBC.connectDatabase();
@@ -199,6 +199,17 @@ public class AppTest {
 		}
 		
 		System.out.println(MyJDBC.getShoppingCart("001", storeString));
+	}
+	
+	@Test
+	public void testSearchMedicine() {
+		System.out.println("Welcome to App!");
+		MyJDBC.connectDatabase();
+
+		String storeString = "玉古路店";
+		
+		/* test for SearchMedicine */
+		System.out.println(MyJDBC.searchMedicine("头",storeString));
 	}
 
 	/**
