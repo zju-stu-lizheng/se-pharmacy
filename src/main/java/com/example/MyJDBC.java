@@ -1417,4 +1417,8 @@ public class MyJDBC {
 		}
 		return true;
 	}
+	
+	public static void main(String [] args) {
+		MyJDBC.connectDatabase();
+	}
 }
