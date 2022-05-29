@@ -11,137 +11,136 @@ import java.util.Date;
 import java.util.Vector;
 
 class MedicineBillEntry {
-    // 订单表项含有药品id,数量,品牌,有效期,药房号等数量
-    String medicine_id;
-    int num;
-    String brand;
-    String storehouse_id;
-    String effective_date;
+	// 订单表项含有药品id,数量,品牌,有效期,药房号等数量
+	String medicine_id;
+	int num;
+	String brand;
+	String storehouse_id;
+	String effective_date;
 
-    public MedicineBillEntry(String medicine_id, int num, String brand, String storehouse_id, String effective_date) {
-        this.medicine_id = medicine_id;
-        this.num = num;
-        this.brand = brand;
-        this.storehouse_id = storehouse_id;
-        this.effective_date = effective_date;
-    }
+	public MedicineBillEntry(String medicine_id, int num, String brand, String storehouse_id, String effective_date) {
+		this.medicine_id = medicine_id;
+		this.num = num;
+		this.brand = brand;
+		this.storehouse_id = storehouse_id;
+		this.effective_date = effective_date;
+	}
 }
 
 class MedicineBill {
-    // 患者id
-    String user_id;
-    // 账单号
-    int sequence_num;
-    // 具体的药品
-    ArrayList<MedicineBillEntry> bill;
+	// 患者id
+	String user_id;
+	// 账单号
+	int sequence_num;
+	// 具体的药品
+	ArrayList<MedicineBillEntry> bill;
 
-    MedicineBill(String user_id, int sequence_num, ArrayList<MedicineBillEntry> bill) {
-        this.user_id = user_id;
-        this.sequence_num = sequence_num;
-        this.bill = bill;
-    }
+	MedicineBill(String user_id, int sequence_num, ArrayList<MedicineBillEntry> bill) {
+		this.user_id = user_id;
+		this.sequence_num = sequence_num;
+		this.bill = bill;
+	}
 }
 
 class MyWindows {
-    // 记录估计的等待时间，线程安全 <0 表示窗口关闭
-    static Vector<Boolean> windows = new Vector<Boolean>();
-    static final double time_base = 2;
-    static final double take_time = 0.1;
-    static String house_id;
-    
-    // 窗口初始化    
-    public static void setWindowsStatus(int n,String _house_id) {
-    	house_id = _house_id;
-        for (int i = 0; i < n; i++)
-            windows.add(true);
-    }
+	// 记录估计的等待时间，线程安全 <0 表示窗口关闭
+	static Vector<Boolean> windows = new Vector<Boolean>();
+	static final double time_base = 2;
+	static final double take_time = 0.1;
+	static String house_id;
 
-    /**
-     * 关闭窗口
-     * 
-     * @param i : 关闭窗口i
-     */
-    boolean colseWindow(int i) {
-        if (MyJDBC.searchWindowPeople(house_id,i) == 0) {
-            windows.set(i, false);
-            return true;
-        } else
-            return false;
-    }
+	// 窗口初始化
+	public static void setWindowsStatus(int n, String _house_id) {
+		house_id = _house_id;
+		for (int i = 0; i < n; i++)
+			windows.add(true);
+	}
 
-    /**
-     * 开启窗口
-     * 
-     * @param i : 开启窗口i
-     */
-    boolean openWindow(int i) {
-        if (i >= windows.size()) {
-            for (int j = windows.size(); j < i; j++) {
-                windows.add(false);
-            }
-        }
-        if (!windows.get(i)) {
-            windows.set(i,true);
-            return true;
-        } else
-            return false;
-    }
+	/**
+	 * 关闭窗口
+	 * 
+	 * @param i : 关闭窗口i
+	 */
+	boolean colseWindow(int i) {
+		if (MyJDBC.searchWindowPeople(house_id, i) == 0) {
+			windows.set(i, false);
+			return true;
+		} else
+			return false;
+	}
 
-    /**
-     * 选取估计时间最短的窗口
-     */
-    static int windowSchedule() {
-        double min = 999999999;
-        int window_no = -1;
-        double time=0;
-        for (int i = 0; i < windows.size(); i++) {
-            if(!windows.get(i)) continue;
-            time=time_base*MyJDBC.searchWindowPeople(house_id,i)
-                +take_time*MyJDBC.searchWindowMedicine(house_id,i);
-            if (min > time) {
-                min = time;
-                window_no = i;
-            }
-        }
-        return window_no;
-    }
+	/**
+	 * 开启窗口
+	 * 
+	 * @param i : 开启窗口i
+	 */
+	boolean openWindow(int i) {
+		if (i >= windows.size()) {
+			for (int j = windows.size(); j < i; j++) {
+				windows.add(false);
+			}
+		}
+		if (!windows.get(i)) {
+			windows.set(i, true);
+			return true;
+		} else
+			return false;
+	}
 
-    /**
-     * 队列加人
-     * 
-     * @param medicine_bill ：药单
-     * @param window_no     ：加入的窗口号
-     */
-    static int addPerson(int bill_id,String house_id) {
-        if(MyJDBC.addQueue(bill_id,house_id)){
-            int window_no=windowSchedule();
-            MyJDBC.addWindow(bill_id,house_id,window_no);
-            return window_no; 
-        }
-        return -1;
-    }
+	/**
+	 * 选取估计时间最短的窗口
+	 */
+	static int windowSchedule() {
+		double min = 999999999;
+		int window_no = -1;
+		double time = 0;
+		for (int i = 0; i < windows.size(); i++) {
+			if (!windows.get(i))
+				continue;
+			time = time_base * MyJDBC.searchWindowPeople(house_id, i)
+					+ take_time * MyJDBC.searchWindowMedicine(house_id, i);
+			if (min > time) {
+				min = time;
+				window_no = i;
+			}
+		}
+		return window_no;
+	}
 
-    /**
-     * 队列踢人
-     * 
-     * @param medicine_bill ：药单
-     * @param window_no     ：踢出的窗口号
-     */
-    void deletePerson(int bill) {
-        MyJDBC.deleteQueue(bill);
-        MyJDBC.deleteWindow(bill);
-    }
+	/**
+	 * 队列加人
+	 * 
+	 * @param medicine_bill ：药单
+	 * @param window_no     ：加入的窗口号
+	 */
+	static int addPerson(int bill_id, String house_id) {
+		if (MyJDBC.addQueue(bill_id, house_id)) {
+			int window_no = windowSchedule();
+			MyJDBC.addWindow(bill_id, house_id, window_no);
+			return window_no;
+		}
+		return -1;
+	}
 
+	/**
+	 * 队列踢人
+	 * 
+	 * @param medicine_bill ：药单
+	 * @param window_no     ：踢出的窗口号
+	 */
+	void deletePerson(int bill) {
+		MyJDBC.deleteQueue(bill);
+		MyJDBC.deleteWindow(bill);
+	}
 
-
-    /**
-     * 获取该窗口排队的订单
-     * 
-     * @param window_no ：踢出的窗口号
-     */
-//    Vector<Integer> getWindowQueue(int window_no) {
-//        return queue.get(window_no);
-//    }
+	/**
+	 * 获取该窗口排队的订单
+	 * 
+	 * @param window_no ：踢出的窗口号
+	 */
+	// Vector<Integer> getWindowQueue(int window_no) {
+	// return queue.get(window_no);
+	// }
 }
 
 public class MyJDBC {
@@ -525,7 +524,7 @@ public class MyJDBC {
 
 		return queryResultBuffer.toString();
 	}
-	
+
 	/**
 	 * 查询指定药品id与药房id的药品记录
 	 * 
@@ -747,6 +746,7 @@ public class MyJDBC {
 				} else {
 					bills.append("," + bill);
 				}
+				i++;
 			}
 			bills.append("]");
 		} catch (SQLException e) {
@@ -1021,7 +1021,7 @@ public class MyJDBC {
 				sqlExecutionString = String.format(
 						"INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);",
 						user_id, storehouse_id, order_date);
-//				System.out.println(sqlExecutionString);
+				// System.out.println(sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
 
@@ -1123,7 +1123,7 @@ public class MyJDBC {
 				sqlExecutionString = String.format(
 						"INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);",
 						user_id, storehouse_id, order_date);
-//							System.out.println(sqlExecutionString);
+				// System.out.println(sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
 
@@ -1359,7 +1359,7 @@ public class MyJDBC {
 	 * 
 	 * @param user_id       : 用户 id
 	 * @param storehouse_id : 药房 id
-	 * @return
+	 * @return 库存是否足够(true/false)
 	 * @throws SQLException
 	 */
 	public static boolean commitBill(String user_id, String storehouse_id) throws SQLException {
@@ -1395,10 +1395,23 @@ public class MyJDBC {
 				sqlExecutionString = String.format("UPDATE bill set isPaid = 1,paid_date='%s' WHERE bill_id='%s';",
 						paid_date, bill_id);
 				statement.executeUpdate(sqlExecutionString);
+
 				// 3. 从库存中取出相应药品
 				ArrayList<MedicineBillEntry> list = getBillEntries(user_id, storehouse_id);
 				for (MedicineBillEntry medicineItem : list) {
-					// 取出药品
+					// 取出药品 —— 判断是否有足够库存
+					resultSet = statement.executeQuery(String.format(
+							"SELECT num FROM shoppingCart WHERE medicine_id = '%s' AND user_id ='%s' AND storehouse_id = '%s';",
+							medicineItem.medicine_id, user_id, storehouse_id));
+					// 判断是否存在该药品，若不存在返回false
+					if (!resultSet.next())
+						return false;
+					// 记录该药品在购物车当前的数量
+					int oldnum = Integer.valueOf(resultSet.getString(1));
+					// 如果数量小于删除量
+					if (oldnum < medicineItem.num)
+						return false;
+					// 库存足够，出库
 					sqlExecutionString = String.format(
 							"UPDATE medicine set stock = stock - %d where id = '%s' and effective_date = '%s' and storehouse_id = '%s';",
 							medicineItem.num, medicineItem.medicine_id, medicineItem.effective_date,
@@ -1417,8 +1430,8 @@ public class MyJDBC {
 		}
 		return true;
 	}
-	
-	public static void main(String [] args) {
+
+	public static void main(String[] args) {
 		MyJDBC.connectDatabase();
 	}
 }
