@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import org.junit.Test;
 
 /**
- * Unit test for simple App.
+ * Unit test for simple AppLICATION.
  */
 public class AppTest {
 	/**
