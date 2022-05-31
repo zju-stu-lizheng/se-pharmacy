@@ -9,10 +9,11 @@ import org.json.simple.parser.ParseException;
 /**
  * To do list:
  * 1. 医生端数据包解析
- * 	1.1 返回所有药品信息
- *  1.2 给用户开药
+ * 1.1 返回所有药品信息
+ * 1.2 给用户开药
  * 2. 预约端数据包解析
- * 	2.1 获取历史消费记录,日期+药品
+ * 2.1 获取历史消费记录,日期+药品
+ * 
  * @author Lenovo
  *
  */
@@ -35,10 +36,11 @@ public class MyJSON {
 	 * @param stock          : 药品 库存(入库数量)
 	 */
 	public static void insertOperate(String ano, String id, String effective_date, String storehouse_id, String brand,
-			String name, String function, String dosage, String banned, float price, int stock,int isPrescription) {
+			String name, String function, String dosage, String banned, float price, int stock, int isPrescription,
+			String unit) {
 		MyJDBC conJdbc = new MyJDBC(ano);
 		Boolean response = conJdbc.insertMedicine(id, effective_date, storehouse_id, brand, name, function, dosage,
-				banned, price, stock,isPrescription);
+				banned, price, stock, isPrescription, unit);
 		/* 发送一个json包 */
 		JSONObject obj = new JSONObject();
 
@@ -156,62 +158,65 @@ public class MyJSON {
 			System.out.print("op is ");
 			opString = obj.get("op").toString();
 			System.out.println(opString);
-			String ano, id, effective_date, storehouse_id, brand, name, function,dosage,banned, user_id, medicine_id;
+			String ano, id, effective_date, storehouse_id, brand, name, function, dosage, banned, user_id, medicine_id,
+					unit;
 			float price;
-			int stock, num,isPrescription;
+			int stock, num, isPrescription;
 
 			switch (opString) {
-			case "insert_medicine":
-//				System.out.println("insert_medicine");
-				ano = obj.get("ano").toString();
-				id = obj.get("id").toString();
-				effective_date = obj.get("effective_date").toString();
-				storehouse_id = obj.get("storehouse_id").toString();
-				brand = obj.get("brand").toString();
-				name = obj.get("name").toString();
-				function = obj.get("function").toString();
-				dosage = obj.get("dosage").toString();
-				banned = obj.get("banned").toString();
-				price = Float.valueOf(obj.get("price").toString());
-				stock = Integer.valueOf(obj.get("stock").toString());
-				isPrescription = Integer.valueOf(obj.get("isPrescription").toString());
+				case "insert_medicine":
+					// System.out.println("insert_medicine");
+					ano = obj.get("ano").toString();
+					id = obj.get("id").toString();
+					effective_date = obj.get("effective_date").toString();
+					storehouse_id = obj.get("storehouse_id").toString();
+					brand = obj.get("brand").toString();
+					name = obj.get("name").toString();
+					function = obj.get("function").toString();
+					dosage = obj.get("dosage").toString();
+					banned = obj.get("banned").toString();
+					price = Float.valueOf(obj.get("price").toString());
+					stock = Integer.valueOf(obj.get("stock").toString());
+					isPrescription = Integer.valueOf(obj.get("isPrescription").toString());
+					unit = obj.get("unit").toString();
 
-				/* 解析得到一个插入操作 */
-				insertOperate(ano, id, effective_date, storehouse_id, brand, name, function,dosage,banned, price, stock,isPrescription);
-				break;
-			case "delete_medicine":
-//				System.out.println("delete_medicine");
-				ano = obj.get("ano").toString();
-				id = obj.get("id").toString();
-				effective_date = obj.get("effective_date").toString();
-				storehouse_id = obj.get("storehouse_id").toString();
+					/* 解析得到一个插入操作 */
+					insertOperate(ano, id, effective_date, storehouse_id, brand, name, function, dosage, banned, price,
+							stock, isPrescription, unit);
+					break;
+				case "delete_medicine":
+					// System.out.println("delete_medicine");
+					ano = obj.get("ano").toString();
+					id = obj.get("id").toString();
+					effective_date = obj.get("effective_date").toString();
+					storehouse_id = obj.get("storehouse_id").toString();
 
-				/* 解析得到一个出库操作 */
-				deleteOperate(ano, id, effective_date, storehouse_id);
-				break;
-			case "query_medicine":
-				ano = obj.get("ano").toString();
+					/* 解析得到一个出库操作 */
+					deleteOperate(ano, id, effective_date, storehouse_id);
+					break;
+				case "query_medicine":
+					ano = obj.get("ano").toString();
 
-				/* 解析得到一个查询药品操作 */
-				retString = queryMedicineOperate(ano);
-				break;
-			case "query_shoppingCart":
-				user_id = obj.get("user_id").toString();
-				storehouse_id = obj.get("storehouse_id").toString();
-				/* 解析得到一个查询购物车操作 */
-				queryShoppingCartOperate(user_id,storehouse_id);
-				break;
-			case "insert_shoppingCart":
-				user_id = obj.get("user_id").toString();
-				medicine_id = obj.get("medicine_id").toString();
-				storehouse_id = obj.get("storehouse_id").toString();
-				num = Integer.valueOf(obj.get("num").toString());
+					/* 解析得到一个查询药品操作 */
+					retString = queryMedicineOperate(ano);
+					break;
+				case "query_shoppingCart":
+					user_id = obj.get("user_id").toString();
+					storehouse_id = obj.get("storehouse_id").toString();
+					/* 解析得到一个查询购物车操作 */
+					queryShoppingCartOperate(user_id, storehouse_id);
+					break;
+				case "insert_shoppingCart":
+					user_id = obj.get("user_id").toString();
+					medicine_id = obj.get("medicine_id").toString();
+					storehouse_id = obj.get("storehouse_id").toString();
+					num = Integer.valueOf(obj.get("num").toString());
 
-				/* 解析得到加入购物车操作 */
-				insertShoppingCartOperate(user_id, medicine_id, storehouse_id, num);
-				break;
-			default:
-				break;
+					/* 解析得到加入购物车操作 */
+					insertShoppingCartOperate(user_id, medicine_id, storehouse_id, num);
+					break;
+				default:
+					break;
 			}
 
 		} catch (ParseException pe) {

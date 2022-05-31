@@ -180,10 +180,6 @@ public class MyJDBC {
 		connectDatabase();
 	}
 
-	public void Hello() {
-		System.out.println("Hello!");
-	}
-
 	/**
 	 * 删除表格内容，方便下次进行测试
 	 * 
@@ -323,14 +319,16 @@ public class MyJDBC {
 	 * @return : true(插入成功)/false(插入失败)
 	 */
 	public static boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand,
-			String name, String function, String dosage, String banned, float price, int stock, int isPrescription) {
+			String name, String function, String dosage, String banned, float price, int stock, int isPrescription,
+			String unit) {
 		String sqlExecutionString = "";
 		try {
 			Statement statement = connection.createStatement();
 			// insert into database
 			sqlExecutionString = String.format(
-					"INSERT INTO medicine VALUES('%s','%s','%s','%s','%s','%s','%s','%s', %f, %d, %d);", id,
-					effective_date, storehouse_id, brand, name, function, dosage, banned, price, stock, isPrescription);
+					"INSERT INTO medicine VALUES('%s','%s','%s','%s','%s','%s','%s','%s', %f, %d, %d, '%s');", id,
+					effective_date, storehouse_id, brand, name, function, dosage, banned, price, stock, isPrescription,
+					unit);
 			statement.executeUpdate(sqlExecutionString);
 			// add a log
 			String option = "insert medicine";
@@ -535,7 +533,7 @@ public class MyJDBC {
 		String sqlQueryString = String.format(
 				"select id,name,brand,function,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand;",
 				searchContent, branchName);
-		System.out.println(sqlQueryString);
+		// System.out.println(sqlQueryString);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -589,7 +587,7 @@ public class MyJDBC {
 	 */
 	public static String queryMedicine(String medicineID, String branchName) {
 		String sqlQueryString = String.format(
-				"select id,name,brand,function,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture where id='%s' and storehouse_id = '%s' group by name,brand;",
+				"select id,name,brand,function,dosage,banned,price,url,unit,sum(stock) as allStock from medicine natural join picture where id='%s' and storehouse_id = '%s' group by name,brand;",
 				medicineID, branchName);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
@@ -607,6 +605,7 @@ public class MyJDBC {
 				String url = rs.getString("url");
 				float price = rs.getFloat("price");
 				int allStock = rs.getInt("allStock");
+				String unit = rs.getString("unit");
 				StringBuffer function = new StringBuffer("");
 				char[] c = tmpString.toCharArray();
 
@@ -621,10 +620,12 @@ public class MyJDBC {
 				}
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
+							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "\",\"" + unit
+							+ "\"]";
 				else {
 					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
+							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "\",\"" + unit
+							+ "\"]";
 				}
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
@@ -643,7 +644,7 @@ public class MyJDBC {
 	 * @return : list(python)格式的药品记录
 	 */
 	public static String queryMedicine() {
-		String sqlQueryString = "select id,name,brand,function,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture group by name,brand;";
+		String sqlQueryString = "select id,name,brand,function,dosage,banned,price,url,unit,sum(stock) as allStock from medicine natural join picture group by name,brand;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -660,6 +661,7 @@ public class MyJDBC {
 				String url = rs.getString("url");
 				float price = rs.getFloat("price");
 				int allStock = rs.getInt("allStock");
+				String unit = rs.getString("unit");
 				StringBuffer function = new StringBuffer("");
 				char[] c = tmpString.toCharArray();
 
@@ -674,10 +676,12 @@ public class MyJDBC {
 				}
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
+							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "\",\"" + unit
+							+ "\"]";
 				else {
 					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
+							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "\",\"" + unit
+							+ "\"]";
 				}
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
@@ -906,7 +910,7 @@ public class MyJDBC {
 				sqlExecutionString = String.format(
 						"INSERT INTO bill (user_id,storehouse_id,order_date,isPaid ) VALUES('%s','%s','%s',0);",
 						user_id, storehouse_id, order_date);
-				System.out.println("查询bill表的sql语句:" + sqlExecutionString);
+				// System.out.println("查询bill表的sql语句:" + sqlExecutionString);
 				statement.executeUpdate(sqlExecutionString);
 				connection.commit();
 
@@ -1429,5 +1433,6 @@ public class MyJDBC {
 
 	public static void main(String[] args) {
 		MyJDBC.connectDatabase();
+		System.out.println("hello se");
 	}
 }
