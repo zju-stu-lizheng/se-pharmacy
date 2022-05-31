@@ -6,6 +6,17 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+/**
+ * To do list:
+ * 1. 医生端数据包解析
+ * 	1.1 返回所有药品信息
+ *  1.2 给用户开药
+ * 2. 预约端数据包解析
+ * 	2.1 获取历史消费记录,日期+药品
+ * @author Lenovo
+ *
+ */
+
 public class MyJSON {
 
 	/**

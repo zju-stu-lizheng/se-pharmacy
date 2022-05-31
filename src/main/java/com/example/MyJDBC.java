@@ -691,10 +691,6 @@ public class MyJDBC {
 	}
 
 	/**
-	 * To do list : 返回格式
-	 */
-
-	/**
 	 * 查询目标用户购物车中的药品列表
 	 * 
 	 * @param user_id     : 用户 id
