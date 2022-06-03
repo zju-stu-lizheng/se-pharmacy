@@ -1435,12 +1435,12 @@ public class MyJDBC {
 	public static void main(String[] args) {
 		MyJDBC.connectDatabase();
 		System.out.println("test for insert Medicine");
-		String id = "001";
+		String id = "003";
 		String effString = "2023-05-28";
 		String storeString = "玉古路店";
 		String brandString = "国药";
-		String name = "阿司匹林";
-		String function = "解热镇痛";
+		String name = "999感冒灵";
+		String function = "清热解毒";
 		String dosage = "一日三次";
 		String banned = "三高人群";
 		float price = 25.0f;
