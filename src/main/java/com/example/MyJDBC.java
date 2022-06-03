@@ -149,8 +149,8 @@ public class MyJDBC {
 	 * 登录数据库所需的信息:包括驱动器，数据库名称以及登录名、密码
 	 */
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-	static final String DB_URL = "jdbc:mysql://localhost:3306/se?useSSL=false&serverTimezone=UTC";
-	static final String USERNAME = "root";
+	static final String DB_URL = "jdbc:mysql://124.220.171.17:3306/pharmacy?useSSL=false&serverTimezone=UTC";
+	static final String USERNAME = "Pharmacy";
 	static final String PASSWD = "lizheng";
 
 	// sql
@@ -531,7 +531,7 @@ public class MyJDBC {
 	public static String searchMedicine(String searchContent, String branchName) {
 		searchContent += "%";
 		String sqlQueryString = String.format(
-				"select id,name,brand,function,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand;",
+				"select id,name,brand,`function`,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand;",
 				searchContent, branchName);
 		// System.out.println(sqlQueryString);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
@@ -587,7 +587,7 @@ public class MyJDBC {
 	 */
 	public static String queryMedicine(String medicineID, String branchName) {
 		String sqlQueryString = String.format(
-				"select id,name,brand,function,dosage,banned,price,url,unit,sum(stock) as allStock from medicine natural join picture where id='%s' and storehouse_id = '%s' group by name,brand;",
+				"select id,name,brand,`function`,dosage,banned,price,url,unit,sum(stock) as allStock from medicine natural join picture where id='%s' and storehouse_id = '%s' group by name,brand;",
 				medicineID, branchName);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
@@ -644,7 +644,7 @@ public class MyJDBC {
 	 * @return : list(python)格式的药品记录
 	 */
 	public static String queryMedicine() {
-		String sqlQueryString = "select id,name,brand,function,dosage,banned,price,url,unit,sum(stock) as allStock from medicine natural join picture group by name,brand;";
+		String sqlQueryString = "select id,name,brand,`function`,dosage,banned,price,url,unit,sum(stock) as allStock from medicine natural join picture group by name,brand;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -728,12 +728,12 @@ public class MyJDBC {
 				}
 				int qid = -1, wid = -1;
 				if (isPaid == 1) { // 判断ispaid,未支付返回-1
-					sqlQueryString = String.format("select qid from Queue where bill_id = %d;", bill_id);
+					sqlQueryString = String.format("select qid from SE_Queue where bill_id = %d;", bill_id);
 					billResult = stmt2.executeQuery(sqlQueryString);
 					if (billResult.next()) {
 						qid = billResult.getInt("qid");
 					}
-					sqlQueryString = String.format("select wid from Window where bill_id = %d;", bill_id);
+					sqlQueryString = String.format("select wid from SE_Window where bill_id = %d;", bill_id);
 					billResult = stmt2.executeQuery(sqlQueryString);
 					if (billResult.next()) {
 						wid = billResult.getInt("wid");
@@ -1218,7 +1218,8 @@ public class MyJDBC {
 		try {
 			statement = connection.createStatement();
 			statement.executeUpdate(
-					"INSERT INTO Queue (bill_id,storehouse_id)" + " VALUES(" + bill_id + ",'" + storehouse_id + "');");
+					"INSERT INTO SE_Queue (bill_id,storehouse_id)" + " VALUES(" + bill_id + ",'" + storehouse_id
+							+ "');");
 			connection.commit();
 		} catch (SQLException e) {
 			try {
@@ -1242,7 +1243,7 @@ public class MyJDBC {
 		Statement statement;
 		try {
 			statement = connection.createStatement();
-			statement.executeUpdate("Delete From Queue where bill_id = " + bill_id + ";");
+			statement.executeUpdate("Delete From SE_Queue where bill_id = " + bill_id + ";");
 			connection.commit();
 		} catch (SQLException e) {
 			try {
@@ -1266,7 +1267,7 @@ public class MyJDBC {
 		Statement statement;
 		try {
 			statement = connection.createStatement();
-			statement.executeUpdate("Delete From Window where bill_id = " + bill_id + ";");
+			statement.executeUpdate("Delete From SE_Window where bill_id = " + bill_id + ";");
 			connection.commit();
 		} catch (SQLException e) {
 			try {
@@ -1292,7 +1293,7 @@ public class MyJDBC {
 		Statement statement;
 		try {
 			statement = connection.createStatement();
-			statement.executeUpdate("INSERT INTO Window (bill_id,storehouse_id,wid)" + " VALUES(" + bill_id + ",'"
+			statement.executeUpdate("INSERT INTO SE_Window (bill_id,storehouse_id,wid)" + " VALUES(" + bill_id + ",'"
 					+ storehouse_id + "'," + wid + ");");
 			connection.commit();
 		} catch (SQLException e) {
@@ -1317,7 +1318,7 @@ public class MyJDBC {
 	public static int searchWindowPeople(String storehouse_id, int wid) {
 		int count = 0;
 		String sqlQueryString = String.format(
-				"select count(bill_id) as cnt from window where storehouse_id='%s' and wid=%d;", storehouse_id, wid);
+				"select count(bill_id) as cnt from SE_Window where storehouse_id='%s' and wid=%d;", storehouse_id, wid);
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
 			if (rs.next()) {
@@ -1340,7 +1341,7 @@ public class MyJDBC {
 	public static int searchWindowMedicine(String storehouse_id, int wid) {
 		int count = 0;
 		String sqlQueryString = String.format(
-				"select sum(num) as num_medicine from bill natural join shoppingCart natural join window where storehouse_id='%s' and wid=%d;",
+				"select sum(num) as num_medicine from bill natural join shoppingCart natural join SE_Window where storehouse_id='%s' and wid=%d;",
 				storehouse_id, wid);
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
@@ -1433,6 +1434,19 @@ public class MyJDBC {
 
 	public static void main(String[] args) {
 		MyJDBC.connectDatabase();
-		System.out.println("hello se");
+		System.out.println("test for insert Medicine");
+		String id = "001";
+		String effString = "2023-05-28";
+		String storeString = "玉古路店";
+		String brandString = "国药";
+		String name = "阿司匹林";
+		String function = "解热镇痛";
+		String dosage = "一日三次";
+		String banned = "三高人群";
+		float price = 25.0f;
+		int stock = 20;
+		String unit = "盒";
+		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock, 0,
+				unit);
 	}
 }

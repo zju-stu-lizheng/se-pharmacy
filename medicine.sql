@@ -57,17 +57,21 @@ create table `shoppingCart`(
     foreign key (bill_id) references Bill(bill_id)
 )engine=InnoDB default charset= utf8;
 
-create table `Window`(
+create table `SE_Window`(
     `bill_id` int unique,
     `storehouse_id` varchar(100),
     `wid` int,
     foreign key (bill_id) references Bill(bill_id)
 )engine=InnoDB default charset= utf8;
 
-create table `Queue`(
+create table `SE_Queue`(
     `bill_id` int unique,
     `storehouse_id` varchar(100),
     `qid` int auto_increment,
     primary key(qid),
     foreign key (bill_id) references Bill(bill_id)
 )engine=InnoDB default charset= utf8;
+
+insert into administrator VALUES('001','lizheng','yp','123456');
+insert into picture values('阿司匹林','国药','https://s2.loli.net/2022/05/06/q7ulP6FDjtVOMQE.png');
+insert into picture values('头孢','国药','https://s2.loli.net/2022/05/06/Fp3MwJu1U8tbi96.png');
