@@ -2,15 +2,7 @@ create table `medicine`(
     `id` char(10), 
     `effective_date` date,/*YYYY-MM-DD*/
     `storehouse_id` varchar(100),
-    `brand` varchar(100),
-    `name` varchar(100), 
-    `function` varchar(100),
-    `dosage` varchar(100),
-    `banned` varchar(100),
-    `price` float,
     `stock` int,
-    `prescription` tinyint(1),
-    `unit` varchar(100),
     primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;
 
 create table `picture`(
