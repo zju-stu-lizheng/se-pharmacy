@@ -99,8 +99,8 @@ public class AppTest {
 		Manager.setWindow(5, storeString);
 
 		MyJDBC.doDeleteTable("shoppingCart");
-		MyJDBC.doDeleteTable("window");
-		MyJDBC.doDeleteTable("Queue");
+		MyJDBC.doDeleteTable("SE_window");
+		MyJDBC.doDeleteTable("SE_Queue");
 		MyJDBC.doDeleteTable("bill");
 
 		/* test for setShoppingCart */
