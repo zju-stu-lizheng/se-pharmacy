@@ -598,7 +598,7 @@ public class MyJDBC {
 	 */
 	public static String queryMedicine(String medicineID, String branchName) {
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join picture where id='%s' and storehouse_id = '%s' group by name,brand;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs where id='%s' and storehouse_id = '%s' group by name,brand;",
 				medicineID, branchName);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
@@ -1436,7 +1436,7 @@ public class MyJDBC {
 		MyJDBC.connectDatabase();
 		System.out.println("test for insert Medicine");
 		String id = "1";
-		String effString = "2023-05-28";
+		String effString = "2023-08-28";
 		String storeString = "玉古路店";
 		int stock = 20;
 		MyJDBC.insertMedicine(id, effString, storeString, stock);

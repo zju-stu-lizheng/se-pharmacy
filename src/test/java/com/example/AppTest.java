@@ -87,6 +87,14 @@ public class AppTest {
 	}
 
 	@Test
+	public void queryMedicine() {
+		MyJDBC.connectDatabase();
+
+		String storeString = "玉古路店";
+		System.out.println(MyJDBC.queryMedicine("1", storeString));
+	}
+
+	@Test
 	public void testForShoppingCart() {
 		System.out.println("Welcome to App!");
 		MyJDBC.connectDatabase();
