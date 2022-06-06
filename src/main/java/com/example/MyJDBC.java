@@ -49,6 +49,11 @@ class MyWindows {
 	static final double take_time = 0.1;
 	static String house_id;
 
+	static {
+		for (int i = 0; i < 5; i++)
+			windows.add(true);
+	}
+
 	// 窗口初始化
 	public static void setWindowsStatus(int n, String _house_id) {
 		house_id = _house_id;
@@ -148,9 +153,15 @@ public class MyJDBC {
 	/**
 	 * 登录数据库所需的信息:包括驱动器，数据库名称以及登录名、密码
 	 */
+
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+	// remote
 	static final String DB_URL = "jdbc:mysql://124.220.171.17:3306/pharmacy?useSSL=false&serverTimezone=UTC";
 	static final String USERNAME = "Pharmacy";
+	// PC
+	// static final String DB_URL =
+	// "jdbc:mysql://localhost:3306/se?useSSL=false&serverTimezone=UTC";
+	// static final String USERNAME = "root";
 	static final String PASSWD = "lizheng";
 
 	// sql
@@ -302,33 +313,44 @@ public class MyJDBC {
 		return true;
 	}
 
+	public static Vector<String> getAllMedicineID() {
+		Vector<String> allID = new Vector<String>();
+		Statement statement;
+		ResultSet resultSet;
+		String sqlExecutionString = "";
+		try {
+			statement = connection.createStatement();
+			// 执行sql语句,拿到结果集
+			sqlExecutionString = String.format("SELECT id FROM db_drugs;");
+			resultSet = statement.executeQuery(sqlExecutionString);
+			// 遍历结果集，得到数据
+			while (resultSet.next()) {
+				String id = resultSet.getString("id");
+				allID.add(id);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return allID;
+	}
+
 	/**
-	 * 插入一条药品信息
+	 * 药品入库(单种)
 	 * 
 	 * @param id             : 药品 id
 	 * @param effective_date : 药品 有效日期 <YYYY-MM-DD>
-	 * @param storehouse_id  : 库房 id <char(2)>
-	 * @param brand          : 药品 厂商
-	 * @param name           : 药品 名字
-	 * @param function       : 药品 作用
-	 * @param dosage         : 用法用量
-	 * @param banned         : 禁用人群
-	 * @param price          : 药品 单价
+	 * @param storehouse_id  : 库房 id <char(255)>
 	 * @param stock          : 药品 库存(入库数量)
-	 * @param isPrescription : 是否为处方药 (1:处方药，0：非处方药)
 	 * @return : true(插入成功)/false(插入失败)
 	 */
-	public static boolean insertMedicine(String id, String effective_date, String storehouse_id, String brand,
-			String name, String function, String dosage, String banned, float price, int stock, int isPrescription,
-			String unit) {
+	public static boolean insertMedicine(String id, String effective_date, String storehouse_id, int stock) {
 		String sqlExecutionString = "";
 		try {
 			Statement statement = connection.createStatement();
 			// insert into database
 			sqlExecutionString = String.format(
-					"INSERT INTO medicine VALUES('%s','%s','%s','%s','%s','%s','%s','%s', %f, %d, %d, '%s');", id,
-					effective_date, storehouse_id, brand, name, function, dosage, banned, price, stock, isPrescription,
-					unit);
+					"INSERT INTO medicine VALUES('%s','%s','%s',%d);", id,
+					effective_date, storehouse_id, stock);
 			statement.executeUpdate(sqlExecutionString);
 			// add a log
 			String option = "insert medicine";
@@ -531,7 +553,7 @@ public class MyJDBC {
 	public static String searchMedicine(String searchContent, String branchName) {
 		searchContent += "%";
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,url,sum(stock) as allStock from medicine natural join picture where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand;",
 				searchContent, branchName);
 		// System.out.println(sqlQueryString);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
@@ -546,28 +568,17 @@ public class MyJDBC {
 				String name = rs.getString("name");
 				String dosage = rs.getString("dosage");
 				String banned = rs.getString("banned");
-				tmpString = rs.getString("function");
-				String url = rs.getString("url");
+				String function = rs.getString("function");
+				String picture = rs.getString("picture");
 				float price = rs.getFloat("price");
 				int allStock = rs.getInt("allStock");
-				StringBuffer function = new StringBuffer("");
-				char[] c = tmpString.toCharArray();
 
-				for (j = 0; j < c.length; j++) {
-					if (c[j] == '"') {
-						function.append("\\\"");
-					} else if (c[j] == '\\') {
-						function.append("\\\\");
-					} else {
-						function.append(c[j]);
-					}
-				}
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "]";
 				else {
 					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "]";
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "]";
 				}
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
@@ -587,7 +598,7 @@ public class MyJDBC {
 	 */
 	public static String queryMedicine(String medicineID, String branchName) {
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,url,unit,sum(stock) as allStock from medicine natural join picture where id='%s' and storehouse_id = '%s' group by name,brand;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join picture where id='%s' and storehouse_id = '%s' group by name,brand;",
 				medicineID, branchName);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
@@ -602,7 +613,7 @@ public class MyJDBC {
 				String dosage = rs.getString("dosage");
 				String banned = rs.getString("banned");
 				tmpString = rs.getString("function");
-				String url = rs.getString("url");
+				String picture = rs.getString("picture");
 				float price = rs.getFloat("price");
 				int allStock = rs.getInt("allStock");
 				String unit = rs.getString("unit");
@@ -620,11 +631,11 @@ public class MyJDBC {
 				}
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "\",\"" + unit
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "\",\"" + unit
 							+ "\"]";
 				else {
 					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "\",\"" + unit
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "\",\"" + unit
 							+ "\"]";
 				}
 				/* 将每条记录添加入 buffer */
@@ -644,7 +655,7 @@ public class MyJDBC {
 	 * @return : list(python)格式的药品记录
 	 */
 	public static String queryMedicine() {
-		String sqlQueryString = "select id,name,brand,`function`,dosage,banned,price,url,unit,sum(stock) as allStock from medicine natural join picture group by name,brand;";
+		String sqlQueryString = "select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs group by name,brand;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -657,30 +668,19 @@ public class MyJDBC {
 				String name = rs.getString("name");
 				String dosage = rs.getString("dosage");
 				String banned = rs.getString("banned");
-				tmpString = rs.getString("function");
-				String url = rs.getString("url");
+				String function = rs.getString("function");
+				String picture = rs.getString("picture");
 				float price = rs.getFloat("price");
 				int allStock = rs.getInt("allStock");
 				String unit = rs.getString("unit");
-				StringBuffer function = new StringBuffer("");
-				char[] c = tmpString.toCharArray();
 
-				for (j = 0; j < c.length; j++) {
-					if (c[j] == '"') {
-						function.append("\\\"");
-					} else if (c[j] == '\\') {
-						function.append("\\\\");
-					} else {
-						function.append(c[j]);
-					}
-				}
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "\",\"" + unit
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "\",\"" + unit
 							+ "\"]";
 				else {
 					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + allStock + "\",\"" + unit
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "\",\"" + unit
 							+ "\"]";
 				}
 				/* 将每条记录添加入 buffer */
@@ -763,7 +763,7 @@ public class MyJDBC {
 	 * @return [
 	 *         ["002","国药","头孢","头孢就酒，越喝越勇","一日三次","三高人群",24.0,"https://s2.loli.net/2022/05/06/.png",10,0],...
 	 *         ]
-	 *         medicine_id,brand,name,function,dosage,banned,price,url,num,isprescription
+	 *         medicine_id,brand,name,function,dosage,banned,price,picture,num,isprescription
 	 */
 	public static String getBillItems(int bill_id) {
 		StringBuffer BillItemBuffer = new StringBuffer("[");
@@ -781,7 +781,7 @@ public class MyJDBC {
 
 				// 针对每一种药,从所有药品中挑选出保质期最短的药品
 				String sqlQueryString2 = String.format(
-						"select * from medicine natural join picture where id = '%s' AND storehouse_id = '%s' ORDER BY effective_date ASC;",
+						"select * from medicine natural join db_drugs where id = '%s' AND storehouse_id = '%s' ORDER BY effective_date ASC;",
 						medicine_id, storehouse_id);
 				// 执行搜索语句，我只取第一条记录
 				Statement stmt2 = connection.createStatement();
@@ -794,7 +794,7 @@ public class MyJDBC {
 				String dosage = dateResultSet.getString("dosage");
 				String banned = dateResultSet.getString("banned");
 				float price = dateResultSet.getFloat("price");
-				String url = dateResultSet.getString("url");
+				String picture = dateResultSet.getString("picture");
 				int isprescription = dateResultSet.getInt("prescription");
 
 				StringBuffer function = new StringBuffer(""); // 转义
@@ -809,14 +809,14 @@ public class MyJDBC {
 						function.append(c[j]);
 					}
 				}
-				// medicine_id,brand,name,function,dosage,banned,price,url,num,isprescription
+				// medicine_id,brand,name,function,dosage,banned,price,picture,num,isprescription
 				if (i == 0)
 					tmpString = "[\"" + medicine_id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\""
-							+ dosage + "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + num + ","
+							+ dosage + "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + num + ","
 							+ isprescription + "]";
 				else {
 					tmpString = ",[\"" + medicine_id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\""
-							+ dosage + "\",\"" + banned + "\"," + price + ",\"" + url + "\"," + num + ","
+							+ dosage + "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + num + ","
 							+ isprescription + "]";
 				}
 				/* 将每条记录添加入 buffer */
@@ -851,7 +851,7 @@ public class MyJDBC {
 
 				// 针对每一种药,从所有药品中挑选出保质期最短的药品
 				String sqlQueryString2 = String.format(
-						"select brand,effective_date from medicine where id = '%s' AND storehouse_id = '%s' ORDER BY effective_date ASC;",
+						"select brand,effective_date from medicine natural join db_drugs where id = '%s' AND storehouse_id = '%s' ORDER BY effective_date ASC;",
 						medicine_id, storehouse_id);
 				// 执行搜索语句，我只取第一条记录
 				Statement stmt2 = connection.createStatement();
@@ -1435,18 +1435,10 @@ public class MyJDBC {
 	public static void main(String[] args) {
 		MyJDBC.connectDatabase();
 		System.out.println("test for insert Medicine");
-		String id = "003";
+		String id = "1";
 		String effString = "2023-05-28";
 		String storeString = "玉古路店";
-		String brandString = "国药";
-		String name = "999感冒灵";
-		String function = "清热解毒";
-		String dosage = "一日三次";
-		String banned = "三高人群";
-		float price = 25.0f;
 		int stock = 20;
-		String unit = "盒";
-		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock, 0,
-				unit);
+		MyJDBC.insertMedicine(id, effString, storeString, stock);
 	}
 }

@@ -3,6 +3,7 @@ package com.example;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.SQLException;
+import java.util.Vector;
 
 import org.junit.Test;
 
@@ -19,46 +20,28 @@ public class AppTest {
 		MyJDBC.doDeleteTable("medicine");
 		/* test for insert Medicine */
 		System.out.println("test for insert Medicine");
-		String id = "001";
+		String id = "1";
 		String effString = "2023-05-28";
 		String storeString = "玉古路店";
-		String brandString = "国药";
-		String name = "阿司匹林";
-		String function = "解热镇痛";
-		String dosage = "一日三次";
-		String banned = "三高人群";
-		float price = 25.0f;
 		int stock = 20;
-		String unit = "盒";
-		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock, 0,
-				unit);
+		MyJDBC.insertMedicine(id, effString, storeString, stock);
 
-		id = "002";
+		id = "2";
 		effString = "2023-05-30";
-		brandString = "国药";
-		name = "头孢";
-		function = "头孢就酒，越喝越勇";
-		price = 24.0f;
 		stock = 10;
-		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock, 0,
-				unit);
+		MyJDBC.insertMedicine(id, effString, storeString, stock);
 
-		id = "001";
+		id = "1";
 		effString = "2023-06-29";
-		brandString = "国药";
-		name = "阿司匹林";
-		function = "解热镇痛";
-		price = 25.0f;
 		stock = 10;
-		MyJDBC.insertMedicine(id, effString, storeString, brandString, name, function, dosage, banned, price, stock, 0,
-				unit);
+		MyJDBC.insertMedicine(id, effString, storeString, stock);
 
 		/* test for query all */
 		System.out.println(MyJDBC.queryMedicine());
 
 		/* test for add Medicine */
 		System.out.println("test for add Medicine");
-		id = "001";
+		id = "1";
 		effString = "2022-05-28";
 		stock = 20;
 		MyJDBC.addMedicine(id, effString, storeString, stock);
@@ -91,6 +74,19 @@ public class AppTest {
 	}
 
 	@Test
+	public void addAllMedicine() {
+		MyJDBC.connectDatabase();
+		Vector<String> allID = MyJDBC.getAllMedicineID();
+		String effString = "2023-06-28";
+		String storeString = "玉古路店";
+		for (int i = 0; i < allID.size(); i++) {
+			int stock = 100 + (int) Math.round(Math.random() * 20);
+			String each = allID.get(i);
+			MyJDBC.insertMedicine(each, effString, storeString, stock);
+		}
+	}
+
+	@Test
 	public void testForShoppingCart() {
 		System.out.println("Welcome to App!");
 		MyJDBC.connectDatabase();
@@ -106,7 +102,7 @@ public class AppTest {
 		/* test for setShoppingCart */
 		System.out.println("test for setShoppingCart");
 		try {
-			assertTrue(MyJDBC.setShoppingCart("001", "001", storeString, 2));
+			assertTrue(MyJDBC.setShoppingCart("001", "1", storeString, 2));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -134,7 +130,7 @@ public class AppTest {
 
 		System.out.println("test for setShoppingCart 2");
 		try {
-			assertTrue(MyJDBC.setShoppingCart("001", "002", storeString, 4));
+			assertTrue(MyJDBC.setShoppingCart("001", "2", storeString, 4));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -167,7 +163,7 @@ public class AppTest {
 		System.out.println(MyJDBC.getAllBranch());
 
 		/* test for query all */
-		System.out.println(MyJDBC.queryMedicine());
+		System.out.println(MyJDBC.queryMedicine("布", storeString));
 
 		try {
 			MyJDBC.commitBill("001", storeString);
@@ -212,7 +208,7 @@ public class AppTest {
 		String storeString = "玉古路店";
 
 		/* test for SearchMedicine */
-		System.out.println(MyJDBC.searchMedicine("头", storeString));
+		System.out.println(MyJDBC.searchMedicine("布", storeString));
 	}
 
 	/**
@@ -227,7 +223,7 @@ public class AppTest {
 		/* test for setShoppingCart */
 		System.out.println("test for setShoppingCart");
 		try {
-			assertTrue(MyJDBC.setShoppingCart("001", "001", storeString, 2));
+			assertTrue(MyJDBC.setShoppingCart("001", "1", storeString, 2));
 			MyJDBC.commitBill("001", storeString);
 		} catch (SQLException e) {
 			e.printStackTrace();
