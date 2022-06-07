@@ -172,6 +172,24 @@ public class MyJDBC {
 	// 日期格式
 	static SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
 
+	// 处理字符串转义
+	static String execString(String function) {
+		StringBuffer _function = new StringBuffer();
+		int j = 0;
+		if (function != null) {
+			for (j = 0; j < function.length(); j++) {
+				if (function.charAt(j) == '"') {
+					_function.append("\\\"");
+				} else if (function.charAt(j) == '\\') {
+					_function.append("\\\\");
+				} else {
+					_function.append(function.charAt(j));
+				}
+			}
+		}
+		return _function.toString();
+	}
+
 	/**
 	 * 构造函数，为管理员新建一个对象
 	 * 
@@ -553,11 +571,11 @@ public class MyJDBC {
 	public static String searchMedicine(String searchContent, String branchName) {
 		searchContent += "%";
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand limit 1,100;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand limit 0,5000;",
 				searchContent, branchName);
 		// System.out.println(sqlQueryString);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
-		int i = 0, j = 0;
+		int i = 0;
 		String tmpString;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
@@ -572,6 +590,10 @@ public class MyJDBC {
 				String picture = rs.getString("picture");
 				float price = rs.getFloat("price");
 				int allStock = rs.getInt("allStock");
+				// 处理转义
+				function = execString(function);
+				dosage = execString(dosage);
+				banned = execString(banned);
 
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
@@ -598,10 +620,10 @@ public class MyJDBC {
 	 */
 	public static String queryMedicine(String medicineID, String branchName) {
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs where id='%s' and storehouse_id = '%s' group by name,brand limit 1,10;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs where id='%s' and storehouse_id = '%s' group by name,brand limit 0,10;",
 				medicineID, branchName);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
-		int i = 0, j = 0;
+		int i = 0;
 		String tmpString;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
@@ -612,23 +634,16 @@ public class MyJDBC {
 				String name = rs.getString("name");
 				String dosage = rs.getString("dosage");
 				String banned = rs.getString("banned");
-				tmpString = rs.getString("function");
+				String function = rs.getString("function");
 				String picture = rs.getString("picture");
 				float price = rs.getFloat("price");
 				int allStock = rs.getInt("allStock");
 				String unit = rs.getString("unit");
-				StringBuffer function = new StringBuffer("");
-				char[] c = tmpString.toCharArray();
 
-				for (j = 0; j < c.length; j++) {
-					if (c[j] == '"') {
-						function.append("\\\"");
-					} else if (c[j] == '\\') {
-						function.append("\\\\");
-					} else {
-						function.append(c[j]);
-					}
-				}
+				function = execString(function);
+				dosage = execString(dosage);
+				banned = execString(banned);
+
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
 							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
@@ -655,9 +670,9 @@ public class MyJDBC {
 	 * @return : list(python)格式的药品记录
 	 */
 	public static String queryMedicine() {
-		String sqlQueryString = "select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs group by name,brand limit 1,10;";
+		String sqlQueryString = "select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs group by name,brand limit 0,1000;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
-		int i = 0, j = 0;
+		int i = 0;
 		String tmpString;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
@@ -673,6 +688,10 @@ public class MyJDBC {
 				float price = rs.getFloat("price");
 				int allStock = rs.getInt("allStock");
 				String unit = rs.getString("unit");
+
+				function = execString(function);
+				dosage = execString(dosage);
+				banned = execString(banned);
 
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
@@ -801,12 +820,12 @@ public class MyJDBC {
 				char[] c = _function.toCharArray();
 
 				for (j = 0; j < c.length; j++) {
-					if (c[j] == '"') {
+					if (function.charAt(j) == '"') {
 						function.append("\\\"");
-					} else if (c[j] == '\\') {
+					} else if (function.charAt(j) == '\\') {
 						function.append("\\\\");
 					} else {
-						function.append(c[j]);
+						function.append(function.charAt(j));
 					}
 				}
 				// medicine_id,brand,name,function,dosage,banned,price,picture,num,isprescription
