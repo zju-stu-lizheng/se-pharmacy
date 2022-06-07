@@ -676,11 +676,11 @@ public class MyJDBC {
 
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "\",\"" + unit
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
 							+ "\"]";
 				else {
 					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "\",\"" + unit
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
 							+ "\"]";
 				}
 				/* 将每条记录添加入 buffer */
