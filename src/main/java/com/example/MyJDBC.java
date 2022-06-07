@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.DuplicateFormatFlagsException;
 import java.util.Vector;
 
 class MedicineBillEntry {
@@ -400,7 +401,7 @@ public class MyJDBC {
 	 * @param stock          : 药品 库存(入库数量)
 	 * @return : true(删除成功)/false(删除失败)
 	 */
-	public static boolean deleteMedicine(String id, String storehouse_id, String effective_date) throws SQLException {
+	public static boolean deleteMedicine(String id, String storehouse_id, String effective_date) {
 		String sqlExecutionString = "";
 		String sqlLogString = "";
 		ResultSet resultSet;
@@ -429,7 +430,11 @@ public class MyJDBC {
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 			// 否则事务回滚
-			connection.rollback();
+			try {
+				connection.rollback();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 			return false;
 		}
 		return true;
@@ -454,7 +459,7 @@ public class MyJDBC {
 			// 获取执行sql语句的statement对象
 			statement = connection.createStatement();
 			// 查询该药品的库存
-			resultSet = statement.executeQuery("SELECT stock FROM medicine WHERE id = \"" + id + "\";");
+			resultSet = statement.executeQuery("SELECT sum(stock) FROM medicine WHERE id = \"" + id + "\";");
 			// 判断是否存在该药品，若不存在返回false
 			if (!resultSet.next())
 				return false;
@@ -570,6 +575,44 @@ public class MyJDBC {
 	// 1. 分页，搜索时返回页数
 
 	/**
+	 * 查询指定药品id的管理端信息（保质期，药房，库存）
+	 *
+	 * @param medicineID : 药品id
+	 * @return : list(python)格式的药品记录
+	 */
+	public static String searchMedicineInfo(String medicineID) {
+		String sqlQueryString = String.format("select * from medicine where id='%s';", medicineID);
+		StringBuffer queryResultBuffer = new StringBuffer("[");
+		int i = 0;
+		String tmpString;
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			while (rs.next()) {
+				/* 根据 属性获取该条记录相应的值 */
+				String id = rs.getString("id");
+				String effective_date = rs.getString("effective_date");
+				String storehouse_id = rs.getString("storehouse_id");
+				int stock = rs.getInt("stock");
+
+				if (i == 0)
+					tmpString = "[\"" + id + "\",\"" + effective_date + "\",\"" + storehouse_id + "\"," + stock
+							+ "]";
+				else {
+					tmpString = ",[\"" + id + "\",\"" + effective_date + "\",\"" + storehouse_id + "\"," + stock
+							+ "]";
+				}
+				/* 将每条记录添加入 buffer */
+				queryResultBuffer.append(tmpString);
+				i++;
+			}
+			queryResultBuffer.append("]");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return queryResultBuffer.toString();
+	}
+
+	/**
 	 * 查询指定药品id与药房id的药品记录
 	 *
 	 * @param searchContent : 药品名字
@@ -645,8 +688,71 @@ public class MyJDBC {
 	}
 
 	/**
+	 * 查询管理端的药品记录(按页展示)
+	 *
+	 * @param pageid : 页号:从1开始
+	 * @return : list(python)格式的药品记录
+	 */
+	public static String queryMedicine(int pageid) {
+		int start = (pageid - 1) * DRUGS_PER_PAGE;
+
+		// 先获取满足所有的药品条数
+		String sqlQueryString = String.format(
+				"select count(*) as cnt from medicine");
+		int numofDrugs = 0;
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			if (rs.next()) {
+				numofDrugs = rs.getInt("cnt");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println(numofDrugs);
+
+		sqlQueryString = String.format("select * from medicine limit %d,%d;", start, DRUGS_PER_PAGE);
+		StringBuffer queryResultBuffer = new StringBuffer("[[");
+		int i = 0;
+		String tmpString;
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			while (rs.next()) {
+				/* 根据 属性获取该条记录相应的值 */
+				String id = rs.getString("id");
+				String effective_date = rs.getString("effective_date");
+				String storehouse_id = rs.getString("storehouse_id");
+				int stock = rs.getInt("stock");
+
+				if (i == 0)
+					tmpString = "[\"" + id + "\",\"" + effective_date + "\",\"" + storehouse_id + "\"," + stock
+							+ "]";
+				else {
+					tmpString = ",[\"" + id + "\",\"" + effective_date + "\",\"" + storehouse_id + "\"," + stock
+							+ "]";
+				}
+				/* 将每条记录添加入 buffer */
+				queryResultBuffer.append(tmpString);
+				i++;
+			}
+			queryResultBuffer.append("]");
+			if (numofDrugs % DRUGS_PER_PAGE == 0) {
+				numofDrugs = numofDrugs / DRUGS_PER_PAGE;
+			} else {
+				numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
+			}
+			queryResultBuffer.append("," + numofDrugs + "]");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return queryResultBuffer.toString();
+	}
+
+	/**
 	 * 查询指定药品id与药房id的药品记录
-	 * 
+	 *
+	 * @param medicineID : 药品id
+	 * @param branchName : 药房名称
 	 * @return : list(python)格式的药品记录
 	 */
 	public static String queryMedicine(String medicineID, String branchName) {

@@ -1,69 +1,71 @@
-create table `medicine`( 
-    `id` char(10), 
-    `effective_date` date,/*YYYY-MM-DD*/
-    `storehouse_id` varchar(100),
-    `stock` int,
-    primary key(id,effective_date,storehouse_id))engine=InnoDB default charset= utf8;
+CREATE TABLE `administrator` (
+  `ano` char(10) NOT NULL,
+  `aname` char(100) DEFAULT NULL,
+  `password` char(100) DEFAULT NULL,
+  `phonenumber` char(100) DEFAULT NULL,
+  PRIMARY KEY (`ano`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table `picture`(
-    `name` varchar(100),
-    `brand` varchar(100),
-    `url` varchar(256),
-    primary key(name,brand)
-)engine=InnoDB default charset= utf8;
+CREATE TABLE `bill` (
+  `bill_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` char(10) DEFAULT NULL,
+  `storehouse_id` varchar(100) DEFAULT NULL,
+  `order_date` date DEFAULT NULL,
+  `paid_date` date DEFAULT NULL,
+  `isPaid` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`bill_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
-create table `administrator`( 
-    `ano` char(10),
-    `aname` char(100),
-    `password` char(100), 
-    `phonenumber` char(100),
-    primary key(ano))engine=InnoDB default charset= utf8;
+CREATE TABLE `db_drugs` (
+  `id` char(10) NOT NULL COMMENT '药品id',
+  `brand` varchar(255) DEFAULT NULL COMMENT '药品商标',
+  `name` varchar(255) DEFAULT NULL COMMENT '药品名称',
+  `function` text COMMENT '功能',
+  `dosage` text COMMENT '用法用量',
+  `banned` text COMMENT '禁用人群',
+  `unit` varchar(255) DEFAULT NULL COMMENT '药品单位',
+  `prescription` tinyint(1) DEFAULT '0' COMMENT '是否为处方药',
+  `picture` varchar(255) DEFAULT NULL COMMENT '图片',
+  `price` float DEFAULT '46',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `picture_index` (`picture`)
+) ENGINE=MyISAM AUTO_INCREMENT=56978 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='药品表';
 
-create table `log`( 
-    `ano` char(10),
-    `option` char(100),
-    `id` char(10), 
-    `effective_date` date,/*YYYY-MM-DD*/
-    `storehouse_id` varchar(100),
-    `stock` int,
-    foreign key (ano) references administrator(ano)
-    )engine=InnoDB default charset= utf8;
+CREATE TABLE `se_queue` (
+  `bill_id` int(11) DEFAULT NULL,
+  `storehouse_id` varchar(100) DEFAULT NULL,
+  `qid` int(11) NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`qid`),
+  UNIQUE KEY `bill_id` (`bill_id`),
+  CONSTRAINT `se_queue_ibfk_1` FOREIGN KEY (`bill_id`) REFERENCES `bill` (`bill_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table `Bill`(
-    `bill_id` int auto_increment,
-    `user_id` char(10),
-    `storehouse_id` varchar(100),
-    `order_date` date,/*YYYY-MM-DD*/
-    `paid_date` date,/*YYYY-MM-DD*/
-    `isPaid` tinyint(1),
-    primary key(bill_id)
-)engine=InnoDB default charset= utf8;
+CREATE TABLE `se_window` (
+  `bill_id` int(11) DEFAULT NULL,
+  `storehouse_id` varchar(100) DEFAULT NULL,
+  `wid` char(100) DEFAULT NULL,
+  UNIQUE KEY `bill_id` (`bill_id`),
+  CONSTRAINT `window_ibfk_1` FOREIGN KEY (`bill_id`) REFERENCES `bill` (`bill_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table `shoppingCart`(
-	`user_id` char(10),
-	`medicine_id` char(10),
-	`num` int,
-    `storehouse_id` varchar(100),
-    `bill_id` int,
-	primary key(user_id,medicine_id,storehouse_id,bill_id),
-    foreign key (bill_id) references Bill(bill_id)
-)engine=InnoDB default charset= utf8;
+CREATE TABLE `shoppingcart` (
+  `user_id` char(10) NOT NULL,
+  `medicine_id` char(10) NOT NULL,
+  `num` int(11) DEFAULT NULL,
+  `storehouse_id` varchar(100) NOT NULL,
+  `bill_id` int(11) NOT NULL,
+  PRIMARY KEY (`user_id`,`medicine_id`,`storehouse_id`,`bill_id`),
+  KEY `bill_id` (`bill_id`),
+  CONSTRAINT `shoppingcart_ibfk_1` FOREIGN KEY (`bill_id`) REFERENCES `bill` (`bill_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table `SE_Window`(
-    `bill_id` int unique,
-    `storehouse_id` varchar(100),
-    `wid` int,
-    foreign key (bill_id) references Bill(bill_id)
-)engine=InnoDB default charset= utf8;
+CREATE TABLE `medicine` (
+  `id` char(10) NOT NULL,
+  `effective_date` date NOT NULL,
+  `storehouse_id` varchar(100) NOT NULL,
+  `stock` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`,`effective_date`,`storehouse_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table `SE_Queue`(
-    `bill_id` int unique,
-    `storehouse_id` varchar(100),
-    `qid` int auto_increment,
-    primary key(qid),
-    foreign key (bill_id) references Bill(bill_id)
-)engine=InnoDB default charset= utf8;
 
 insert into administrator VALUES('001','lizheng','yp','123456');
-insert into picture values('阿司匹林','国药','https://s2.loli.net/2022/05/06/q7ulP6FDjtVOMQE.png');
-insert into picture values('头孢','国药','https://s2.loli.net/2022/05/06/Fp3MwJu1U8tbi96.png');

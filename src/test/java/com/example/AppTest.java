@@ -93,7 +93,7 @@ public class AppTest {
 		String storeString = "玉古路店";
 		// System.out.println(MyJDBC.queryMedicine("1", storeString));
 
-		System.out.println(MyJDBC.searchMedicine("阿司匹林", storeString, 1));
+		System.out.println(MyJDBC.searchMedicine("头孢拉定颗粒", storeString, 1));
 	}
 
 	@Test
@@ -102,6 +102,18 @@ public class AppTest {
 
 		String branchName = "玉古路店";
 		System.out.println(MyJDBC.queryMedicine("1", branchName));
+	}
+
+	@Test
+	public void testSearchMedicineInfo() {
+		MyJDBC.connectDatabase();
+		System.out.println(MyJDBC.searchMedicineInfo("1"));
+	}
+
+	@Test
+	public void testAdmQueryMedicine() {
+		MyJDBC.connectDatabase();
+		System.out.println(MyJDBC.queryMedicine(1));
 	}
 
 	// @Test
