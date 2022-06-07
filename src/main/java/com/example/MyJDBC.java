@@ -553,7 +553,7 @@ public class MyJDBC {
 	public static String searchMedicine(String searchContent, String branchName) {
 		searchContent += "%";
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand limit 1,100;",
 				searchContent, branchName);
 		// System.out.println(sqlQueryString);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
@@ -598,7 +598,7 @@ public class MyJDBC {
 	 */
 	public static String queryMedicine(String medicineID, String branchName) {
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs where id='%s' and storehouse_id = '%s' group by name,brand;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs where id='%s' and storehouse_id = '%s' group by name,brand limit 1,10;",
 				medicineID, branchName);
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
@@ -631,11 +631,11 @@ public class MyJDBC {
 				}
 				if (i == 0)
 					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "\",\"" + unit
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
 							+ "\"]";
 				else {
 					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "\",\"" + unit
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
 							+ "\"]";
 				}
 				/* 将每条记录添加入 buffer */
@@ -655,7 +655,7 @@ public class MyJDBC {
 	 * @return : list(python)格式的药品记录
 	 */
 	public static String queryMedicine() {
-		String sqlQueryString = "select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs group by name,brand;";
+		String sqlQueryString = "select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs group by name,brand limit 1,10;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0, j = 0;
 		String tmpString;
@@ -1434,11 +1434,11 @@ public class MyJDBC {
 
 	public static void main(String[] args) {
 		MyJDBC.connectDatabase();
-		System.out.println("test for insert Medicine");
-		String id = "1";
-		String effString = "2023-08-28";
-		String storeString = "玉古路店";
-		int stock = 20;
-		MyJDBC.insertMedicine(id, effString, storeString, stock);
+		// System.out.println("test for insert Medicine");
+		// String id = "1";
+		// String effString = "2023-08-28";
+		// String storeString = "玉古路店";
+		// int stock = 20;
+		// MyJDBC.insertMedicine(id, effString, storeString, stock);
 	}
 }

@@ -92,6 +92,8 @@ public class AppTest {
 
 		String storeString = "玉古路店";
 		System.out.println(MyJDBC.queryMedicine("1", storeString));
+
+		System.out.println(MyJDBC.queryMedicine());
 	}
 
 	@Test
