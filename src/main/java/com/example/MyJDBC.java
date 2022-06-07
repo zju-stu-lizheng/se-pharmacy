@@ -172,6 +172,9 @@ public class MyJDBC {
 	// 日期格式
 	static SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
 
+	// 每页的药品数量
+	final static int DRUGS_PER_PAGE = 50;
+
 	// 处理字符串转义
 	static String execString(String function) {
 		StringBuffer _function = new StringBuffer();
@@ -563,18 +566,39 @@ public class MyJDBC {
 		return queryResultBuffer.toString();
 	}
 
+	// To do list:
+	// 1. 分页，搜索时返回页数
+
 	/**
 	 * 查询指定药品id与药房id的药品记录
-	 * 
+	 *
+	 * @param searchContent : 药品名字
+	 * @param branchName    : 药房名称
+	 * @param pageid        : 页号:从1开始
 	 * @return : list(python)格式的药品记录
 	 */
-	public static String searchMedicine(String searchContent, String branchName) {
+	public static String searchMedicine(String searchContent, String branchName, int pageid) {
+		int start = (pageid - 1) * DRUGS_PER_PAGE;
 		searchContent += "%";
+
+		// 先获取满足要求的药品条数
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand limit 0,5000;",
-				searchContent, branchName);
-		// System.out.println(sqlQueryString);
-		StringBuffer queryResultBuffer = new StringBuffer("[");
+				"select count(*) as cnt from db_drugs where name LIKE \"%s\";",
+				searchContent);
+		int numofDrugs = 0;
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			if (rs.next()) {
+				numofDrugs = rs.getInt("cnt");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		sqlQueryString = String.format(
+				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand limit %d,%d;",
+				searchContent, branchName, start, DRUGS_PER_PAGE);
+		StringBuffer queryResultBuffer = new StringBuffer("[[");
 		int i = 0;
 		String tmpString;
 		try (Statement stmt = connection.createStatement()) {
@@ -610,6 +634,13 @@ public class MyJDBC {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		if (numofDrugs % DRUGS_PER_PAGE == 0) {
+			numofDrugs = numofDrugs / DRUGS_PER_PAGE;
+		} else {
+			numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
+		}
+
+		queryResultBuffer.append("," + numofDrugs + "]");
 		return queryResultBuffer.toString();
 	}
 
@@ -620,57 +651,8 @@ public class MyJDBC {
 	 */
 	public static String queryMedicine(String medicineID, String branchName) {
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs where id='%s' and storehouse_id = '%s' group by name,brand limit 0,10;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs where id='%s' and storehouse_id = '%s' group by name,brand",
 				medicineID, branchName);
-		StringBuffer queryResultBuffer = new StringBuffer("[");
-		int i = 0;
-		String tmpString;
-		try (Statement stmt = connection.createStatement()) {
-			ResultSet rs = stmt.executeQuery(sqlQueryString);
-			while (rs.next()) {
-				/* 根据 属性获取该条记录相应的值 */
-				String id = rs.getString("id");
-				String brand = rs.getString("brand");
-				String name = rs.getString("name");
-				String dosage = rs.getString("dosage");
-				String banned = rs.getString("banned");
-				String function = rs.getString("function");
-				String picture = rs.getString("picture");
-				float price = rs.getFloat("price");
-				int allStock = rs.getInt("allStock");
-				String unit = rs.getString("unit");
-
-				function = execString(function);
-				dosage = execString(dosage);
-				banned = execString(banned);
-
-				if (i == 0)
-					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
-							+ "\"]";
-				else {
-					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
-							+ "\"]";
-				}
-				/* 将每条记录添加入 buffer */
-				queryResultBuffer.append(tmpString);
-				i++;
-			}
-			queryResultBuffer.append("]");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return queryResultBuffer.toString();
-	}
-
-	/**
-	 * 查询所有药品记录
-	 * 
-	 * @return : list(python)格式的药品记录
-	 */
-	public static String queryMedicine() {
-		String sqlQueryString = "select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock from medicine natural join db_drugs group by name,brand limit 0,1000;";
 		StringBuffer queryResultBuffer = new StringBuffer("[");
 		int i = 0;
 		String tmpString;

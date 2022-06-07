@@ -14,7 +14,7 @@ public class AppTest {
 	/**
 	 * test for 测试入库，加入购物车等操作
 	 */
-	@Test
+	// @Test
 	public void testAddMedicine() {
 		MyJDBC.connectDatabase();
 		MyJDBC.doDeleteTable("medicine");
@@ -37,7 +37,7 @@ public class AppTest {
 		MyJDBC.insertMedicine(id, effString, storeString, stock);
 
 		/* test for query all */
-		System.out.println(MyJDBC.queryMedicine());
+		// System.out.println(MyJDBC.queryMedicine());
 
 		/* test for add Medicine */
 		System.out.println("test for add Medicine");
@@ -47,7 +47,7 @@ public class AppTest {
 		MyJDBC.addMedicine(id, effString, storeString, stock);
 
 		/* test for query all */
-		System.out.println(MyJDBC.queryMedicine());
+		// System.out.println(MyJDBC.queryMedicine());
 
 		// /* test for delivery Medicine */
 		// System.out.println("test for delivery Medicine");
@@ -73,7 +73,7 @@ public class AppTest {
 
 	}
 
-	@Test
+	// @Test
 	public void addAllMedicine() {
 		MyJDBC.connectDatabase();
 		Vector<String> allID = MyJDBC.getAllMedicineID();
@@ -87,16 +87,24 @@ public class AppTest {
 	}
 
 	@Test
-	public void queryMedicine() {
+	public void SearchMedicine() {
 		MyJDBC.connectDatabase();
 
 		String storeString = "玉古路店";
-		System.out.println(MyJDBC.queryMedicine("1", storeString));
+		// System.out.println(MyJDBC.queryMedicine("1", storeString));
 
-		System.out.println(MyJDBC.searchMedicine("", storeString));
+		System.out.println(MyJDBC.searchMedicine("阿司匹林", storeString, 1));
 	}
 
 	@Test
+	public void testQueryMedicine() {
+		MyJDBC.connectDatabase();
+
+		String branchName = "玉古路店";
+		System.out.println(MyJDBC.queryMedicine("1", branchName));
+	}
+
+	// @Test
 	public void testForShoppingCart() {
 		System.out.println("Welcome to App!");
 		MyJDBC.connectDatabase();
@@ -210,7 +218,7 @@ public class AppTest {
 		System.out.println(MyJDBC.getShoppingCart("001", storeString));
 	}
 
-	@Test
+	// @Test
 	public void testSearchMedicine() {
 		System.out.println("Welcome to App!");
 		MyJDBC.connectDatabase();
@@ -218,13 +226,13 @@ public class AppTest {
 		String storeString = "玉古路店";
 
 		/* test for SearchMedicine */
-		System.out.println(MyJDBC.searchMedicine("布", storeString));
+		// System.out.println(MyJDBC.searchMedicine("布", storeString));
 	}
 
 	/**
 	 * Rigorous Test :-)
 	 */
-	@Test
+	// @Test
 	public void shouldAnswerWithTrue() {
 		String storeString = "玉古路店";
 		Manager.setWindow(5, storeString);
