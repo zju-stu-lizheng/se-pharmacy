@@ -438,9 +438,8 @@ public class MyJDBC {
 			e.printStackTrace();
 		}
 
-		// 只返回非处方药
 		sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand limit %d,%d;",
+				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,stock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' limit %d,%d;",
 				searchContent, branchName, start, DRUGS_PER_PAGE);
 		StringBuffer queryResultBuffer = new StringBuffer("{\"MediList\" : [");
 		int i = 0;

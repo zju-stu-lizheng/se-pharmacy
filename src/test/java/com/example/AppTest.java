@@ -97,7 +97,7 @@ public class AppTest {
 		MyJDBC.connectDatabase();
 
 		String branchName = "玉古路店";
-		System.out.println(MyJDBC.getShoppingCart("8", branchName));
+		System.out.println(MyJDBC.getShoppingCart("9", branchName));
 	}
 
 	@Test
