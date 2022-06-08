@@ -90,19 +90,33 @@ public class AppTest {
 	public void SearchMedicine() {
 		MyJDBC.connectDatabase();
 
-		String storeString = "玉古路店";
-		// System.out.println(MyJDBC.queryMedicine("1", storeString));
+		// String storeString = "玉古路店";
+		System.out.println(MyJDBC.searchMedicine("头孢", 1));
 
-		System.out.println(MyJDBC.searchMedicine("头孢拉定颗粒", storeString, 1));
+		// System.out.println(MyJDBC.searchMedicine("头孢拉定颗粒", storeString, 1));
+	}
+
+	@Test
+	public void testGetShoppingCart() {
+		MyJDBC.connectDatabase();
+
+		String branchName = "玉古路店";
+		System.out.println(MyJDBC.getShoppingCart("9", branchName));
+	}
+
+	@Test
+	public void testGetAllBranch() {
+		MyJDBC.connectDatabase();
+		System.out.println(MyJDBC.getAllBranch());
 	}
 
 	@Test
 	public void testQueryMedicine() {
 		MyJDBC.connectDatabase();
 
-		// String branchName = "玉古路店";
-		// System.out.println(MyJDBC.queryMedicine("1", branchName));
-		System.out.println(MyJDBC.queryMedicine(1));
+		String branchName = "玉古路店";
+		System.out.println(MyJDBC.queryMedicine("1", branchName));
+		// System.out.println(MyJDBC.queryMedicine(1));
 	}
 
 	@Test
