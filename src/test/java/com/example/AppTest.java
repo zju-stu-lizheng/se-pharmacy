@@ -101,7 +101,7 @@ public class AppTest {
 		MyJDBC.connectDatabase();
 
 		String branchName = "玉古路店";
-		System.out.println(MyJDBC.getShoppingCart("9", branchName));
+		System.out.println(MyJDBC.getShoppingCart("8", branchName));
 	}
 
 	@Test
@@ -115,7 +115,8 @@ public class AppTest {
 		MyJDBC.connectDatabase();
 
 		String branchName = "玉古路店";
-		System.out.println(MyJDBC.queryMedicine("1", branchName));
+		// System.out.println(MyJDBC.queryMedicine("99999", branchName));
+		System.out.println(MyJDBC.searchMedicine("", branchName, 1));
 		// System.out.println(MyJDBC.queryMedicine(1));
 	}
 

@@ -615,85 +615,6 @@ public class MyJDBC {
 	}
 
 	/**
-	 * 查询指定药品id的药品记录
-	 *
-	 * @param searchContent : 药品名字
-	 * @param pageid        : 页号:从1开始
-	 * @return : list(python)格式的药品记录
-	 */
-	public static String searchMedicine(String searchContent, int pageid) {
-		int start = (pageid - 1) * DRUGS_PER_PAGE;
-		searchContent += "%";
-
-		// 先获取满足要求的药品条数
-		String sqlQueryString = String.format(
-				"select count(*) as cnt from db_drugs where name LIKE \"%s\";",
-				searchContent);
-		int numofDrugs = 0;
-		try (Statement stmt = connection.createStatement()) {
-			ResultSet rs = stmt.executeQuery(sqlQueryString);
-			if (rs.next()) {
-				numofDrugs = rs.getInt("cnt");
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		// 只返回非处方药
-		sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\"  group by name,brand limit %d,%d;",
-				searchContent, start, DRUGS_PER_PAGE);
-		StringBuffer queryResultBuffer = new StringBuffer("[[");
-		int i = 0;
-		String tmpString;
-		try (Statement stmt = connection.createStatement()) {
-			ResultSet rs = stmt.executeQuery(sqlQueryString);
-			while (rs.next()) {
-				/* 根据 属性获取该条记录相应的值 */
-				String id = rs.getString("id");
-				String brand = rs.getString("brand");
-				String name = rs.getString("name");
-				String dosage = rs.getString("dosage");
-				String banned = rs.getString("banned");
-				String function = rs.getString("function");
-				String picture = rs.getString("picture");
-				float price = rs.getFloat("price");
-				int allStock = rs.getInt("allStock");
-				String unit = rs.getString("unit");
-				int prescription = rs.getInt("prescription");
-				// 处理转义
-				function = execString(function);
-				dosage = execString(dosage);
-				banned = execString(banned);
-
-				if (i == 0)
-					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
-							+ "\"," + prescription + "]";
-				else {
-					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
-							+ "\"," + prescription + "]";
-				}
-				/* 将每条记录添加入 buffer */
-				queryResultBuffer.append(tmpString);
-				i++;
-			}
-			queryResultBuffer.append("]");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		if (numofDrugs % DRUGS_PER_PAGE == 0) {
-			numofDrugs = numofDrugs / DRUGS_PER_PAGE;
-		} else {
-			numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
-		}
-
-		queryResultBuffer.append("," + numofDrugs + "]");
-		return queryResultBuffer.toString();
-	}
-
-	/**
 	 * 查询指定药品id与药房id的药品记录
 	 *
 	 * @param searchContent : 药品名字
@@ -723,6 +644,83 @@ public class MyJDBC {
 		sqlQueryString = String.format(
 				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by name,brand limit %d,%d;",
 				searchContent, branchName, start, DRUGS_PER_PAGE);
+		StringBuffer queryResultBuffer = new StringBuffer("{\"MediList\" : [");
+		int i = 0;
+		String tmpString;
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			while (rs.next()) {
+				/* 根据 属性获取该条记录相应的值 */
+				String id = rs.getString("id");
+				String brand = rs.getString("brand");
+				String name = rs.getString("name");
+				String dosage = rs.getString("dosage");
+				String banned = rs.getString("banned");
+				String function = rs.getString("function");
+				String picture = rs.getString("picture");
+				float price = rs.getFloat("price");
+				int allStock = rs.getInt("allStock");
+				String unit = rs.getString("unit");
+				int prescription = rs.getInt("prescription");
+				// 处理转义
+				function = execString(function);
+				dosage = execString(dosage);
+				banned = execString(banned);
+
+				tmpString = "{\"ID\" : \"" + id + "\", \"Brand\" : \"" + brand + "\", \"Name\" : \"" + name
+						+ "\", \"Description\" : \"" + function + "\", \"Usage\" : \"" + dosage
+						+ "\", \"Taboo\" : \"" + banned + "\", \"Price\" : " + price + ", \"URL\" : \"" + picture
+						+ "\", \"Num\"" + allStock + ", \"Unit\" : " + unit
+						+ "\", \"Prescripted\" : " + prescription + "}";
+				if (i != 0)
+					tmpString = "," + tmpString;
+				/* 将每条记录添加入 buffer */
+				queryResultBuffer.append(tmpString);
+				i++;
+			}
+			queryResultBuffer.append("]");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		if (numofDrugs % DRUGS_PER_PAGE == 0) {
+			numofDrugs = numofDrugs / DRUGS_PER_PAGE;
+		} else {
+			numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
+		}
+
+		queryResultBuffer.append(", \"NumPages\" : " + numofDrugs + "}");
+		return queryResultBuffer.toString();
+	}
+
+	/**
+	 * 查询指定药品id的药品记录
+	 *
+	 * @param searchContent : 药品名字
+	 * @param pageid        : 页号:从1开始
+	 * @return : list(python)格式的药品记录
+	 */
+	public static String searchMedicine(String searchContent, int pageid) {
+		int start = (pageid - 1) * DRUGS_PER_PAGE;
+		searchContent += "%";
+
+		// 先获取满足要求的药品条数
+		String sqlQueryString = String.format(
+				"select count(*) as cnt from db_drugs where name LIKE \"%s\";",
+				searchContent);
+		int numofDrugs = 0;
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			if (rs.next()) {
+				numofDrugs = rs.getInt("cnt");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		// 只返回非处方药
+		sqlQueryString = String.format(
+				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\"  group by name,brand limit %d,%d;",
+				searchContent, start, DRUGS_PER_PAGE);
 		StringBuffer queryResultBuffer = new StringBuffer("[[");
 		int i = 0;
 		String tmpString;
@@ -843,7 +841,6 @@ public class MyJDBC {
 		return queryResultBuffer.toString();
 	}
 
-	// To do list : 加单位和是否处方药
 	/**
 	 * 查询指定药品id与药房id的药品记录
 	 *
@@ -855,12 +852,12 @@ public class MyJDBC {
 		String sqlQueryString = String.format(
 				"select id,name,brand,`function`,dosage,banned,price,picture,unit,sum(stock) as allStock,unit,prescription from medicine natural join db_drugs where id='%s' and storehouse_id = '%s' group by name,brand",
 				medicineID, branchName);
-		StringBuffer queryResultBuffer = new StringBuffer("[");
+		StringBuffer queryResultBuffer = new StringBuffer("{");
 		int i = 0;
 		String tmpString;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
-			while (rs.next()) {
+			if (rs.next()) {
 				/* 根据 属性获取该条记录相应的值 */
 				String id = rs.getString("id");
 				String brand = rs.getString("brand");
@@ -877,21 +874,15 @@ public class MyJDBC {
 				function = execString(function);
 				dosage = execString(dosage);
 				banned = execString(banned);
-
-				if (i == 0)
-					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
-							+ "\"," + prescription + "]";
-				else {
-					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
-							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + ",\"" + unit
-							+ "\"," + prescription + "]";
-				}
+				tmpString = "\"ID\" : \"" + id + "\", \"Brand\" : \"" + brand + "\", \"Name\" : \"" + name
+						+ "\", \"Description\" : \"" + function + "\", \"Usage\" : \"" + dosage
+						+ "\", \"Taboo\" : \"" + banned + "\", \"Price\" : " + price + ", \"URL\" : \"" + picture
+						+ "\", \"Num\"" + allStock + ", \"Unit\" : " + unit
+						+ "\", \"Prescripted\" : " + prescription;
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
-				i++;
 			}
-			queryResultBuffer.append("]");
+			queryResultBuffer.append("}");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -912,7 +903,7 @@ public class MyJDBC {
 				branch_name);
 		int bill_id = -1;
 		int i = 0;
-		StringBuffer bills = new StringBuffer("[");
+		StringBuffer bills = new StringBuffer("{\"BillList\" : [");
 		String bill;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
@@ -944,15 +935,14 @@ public class MyJDBC {
 					}
 				}
 				// 第四步，组合账单对应的药品信息
-				bill = "[" + billItemInfo + ",\"" + order_date + "\",\"" + bill_id + "\"," + qid + "," + wid + "]";
-				if (i == 0) {
-					bills.append(bill);
-				} else {
-					bills.append("," + bill);
-				}
+				bill = "{ \"ItemList\" : " + billItemInfo + ", \"Date\" : \"" + order_date + "\", \"BillID\" : \""
+						+ bill_id + "\", \"QueueID\" : " + qid + ", \"WindowID\" : " + wid + "}";
+				if (i != 0)
+					bill = "," + bill;
+				bills.append(bill);
 				i++;
 			}
-			bills.append("]");
+			bills.append("]}");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -1007,15 +997,13 @@ public class MyJDBC {
 				banned = execString(banned);
 
 				// medicine_id,brand,name,function,dosage,banned,price,picture,num,unit,isprescription
-				if (i == 0)
-					tmpString = "[\"" + medicine_id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\""
-							+ dosage + "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + num + ",\"" + unit
-							+ "\"," + isprescription + "]";
-				else {
-					tmpString = ",[\"" + medicine_id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\""
-							+ dosage + "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + num + ",\"" + unit
-							+ "\"," + isprescription + "]";
-				}
+				tmpString = "{\"ID\" : \"" + medicine_id + "\", \"Brand\" : \"" + brand + "\", \"Name\" : \"" + name
+						+ "\", \"Description\" : \"" + function + "\", \"Usage\" : \"" + dosage
+						+ "\", \"Taboo\" : \"" + banned + "\", \"Price\" : " + price + ", \"URL\" : \"" + picture
+						+ "\", \"Num\"" + num + ", \"Unit\" : " + unit
+						+ "\", \"Prescripted\" : " + isprescription + "}";
+				if (i != 0)
+					tmpString = "," + tmpString;
 				/* 将每条记录添加入 buffer */
 				BillItemBuffer.append(tmpString);
 				i++;
