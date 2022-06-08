@@ -696,9 +696,8 @@ public class MyJDBC {
 	public static String queryMedicine(int pageid) {
 		int start = (pageid - 1) * DRUGS_PER_PAGE;
 
-		// 先获取满足所有的药品条数
-		String sqlQueryString = String.format(
-				"select count(*) as cnt from medicine");
+		// 先获取满足要求的药品条数
+		String sqlQueryString = String.format("select count(distinct id) as cnt from medicine;");
 		int numofDrugs = 0;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
@@ -709,9 +708,9 @@ public class MyJDBC {
 			e.printStackTrace();
 		}
 
-		System.out.println(numofDrugs);
-
-		sqlQueryString = String.format("select * from medicine limit %d,%d;", start, DRUGS_PER_PAGE);
+		sqlQueryString = String.format(
+				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs group by name,brand limit %d,%d;",
+				start, DRUGS_PER_PAGE);
 		StringBuffer queryResultBuffer = new StringBuffer("[[");
 		int i = 0;
 		String tmpString;
@@ -720,31 +719,41 @@ public class MyJDBC {
 			while (rs.next()) {
 				/* 根据 属性获取该条记录相应的值 */
 				String id = rs.getString("id");
-				String effective_date = rs.getString("effective_date");
-				String storehouse_id = rs.getString("storehouse_id");
-				int stock = rs.getInt("stock");
+				String brand = rs.getString("brand");
+				String name = rs.getString("name");
+				String dosage = rs.getString("dosage");
+				String banned = rs.getString("banned");
+				String function = rs.getString("function");
+				String picture = rs.getString("picture");
+				float price = rs.getFloat("price");
+				int allStock = rs.getInt("allStock");
+				// 处理转义
+				function = execString(function);
+				dosage = execString(dosage);
+				banned = execString(banned);
 
 				if (i == 0)
-					tmpString = "[\"" + id + "\",\"" + effective_date + "\",\"" + storehouse_id + "\"," + stock
-							+ "]";
+					tmpString = "[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "]";
 				else {
-					tmpString = ",[\"" + id + "\",\"" + effective_date + "\",\"" + storehouse_id + "\"," + stock
-							+ "]";
+					tmpString = ",[\"" + id + "\",\"" + brand + "\",\"" + name + "\",\"" + function + "\",\"" + dosage
+							+ "\",\"" + banned + "\"," + price + ",\"" + picture + "\"," + allStock + "]";
 				}
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
 				i++;
 			}
 			queryResultBuffer.append("]");
-			if (numofDrugs % DRUGS_PER_PAGE == 0) {
-				numofDrugs = numofDrugs / DRUGS_PER_PAGE;
-			} else {
-				numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
-			}
-			queryResultBuffer.append("," + numofDrugs + "]");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		if (numofDrugs % DRUGS_PER_PAGE == 0) {
+			numofDrugs = numofDrugs / DRUGS_PER_PAGE;
+		} else {
+			numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
+		}
+
+		queryResultBuffer.append("," + numofDrugs + "]");
 		return queryResultBuffer.toString();
 	}
 

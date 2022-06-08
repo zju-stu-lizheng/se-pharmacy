@@ -100,8 +100,9 @@ public class AppTest {
 	public void testQueryMedicine() {
 		MyJDBC.connectDatabase();
 
-		String branchName = "玉古路店";
-		System.out.println(MyJDBC.queryMedicine("1", branchName));
+		// String branchName = "玉古路店";
+		// System.out.println(MyJDBC.queryMedicine("1", branchName));
+		System.out.println(MyJDBC.queryMedicine(1));
 	}
 
 	@Test
