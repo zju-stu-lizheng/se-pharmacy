@@ -459,7 +459,9 @@ public class MyJDBC {
 			// 获取执行sql语句的statement对象
 			statement = connection.createStatement();
 			// 查询该药品的库存
-			resultSet = statement.executeQuery("SELECT sum(stock) FROM medicine WHERE id = \"" + id + "\";");
+			resultSet = statement
+					.executeQuery("SELECT stock FROM medicine WHERE id = \"" + id + "\" and storehouse_id = \""
+							+ storehouse_id + "\" + effective_date = \"" + effective_date + "\";");
 			// 判断是否存在该药品，若不存在返回false
 			if (!resultSet.next())
 				return false;
@@ -670,7 +672,7 @@ public class MyJDBC {
 				tmpString = "{\"ID\" : \"" + id + "\", \"Brand\" : \"" + brand + "\", \"Name\" : \"" + name
 						+ "\", \"Description\" : \"" + function + "\", \"Usage\" : \"" + dosage
 						+ "\", \"Taboo\" : \"" + banned + "\", \"Price\" : " + price + ", \"URL\" : \"" + picture
-						+ "\", \"Num\"" + allStock + ", \"Unit\" : " + unit
+						+ "\", \"Num\" : " + allStock + ", \"Unit\" : \"" + unit
 						+ "\", \"Prescripted\" : " + prescription + "}";
 				if (i != 0)
 					tmpString = "," + tmpString;
@@ -877,7 +879,7 @@ public class MyJDBC {
 				tmpString = "\"ID\" : \"" + id + "\", \"Brand\" : \"" + brand + "\", \"Name\" : \"" + name
 						+ "\", \"Description\" : \"" + function + "\", \"Usage\" : \"" + dosage
 						+ "\", \"Taboo\" : \"" + banned + "\", \"Price\" : " + price + ", \"URL\" : \"" + picture
-						+ "\", \"Num\"" + allStock + ", \"Unit\" : " + unit
+						+ "\", \"Num\" : " + allStock + ", \"Unit\" : \"" + unit
 						+ "\", \"Prescripted\" : " + prescription;
 				/* 将每条记录添加入 buffer */
 				queryResultBuffer.append(tmpString);
@@ -1000,7 +1002,7 @@ public class MyJDBC {
 				tmpString = "{\"ID\" : \"" + medicine_id + "\", \"Brand\" : \"" + brand + "\", \"Name\" : \"" + name
 						+ "\", \"Description\" : \"" + function + "\", \"Usage\" : \"" + dosage
 						+ "\", \"Taboo\" : \"" + banned + "\", \"Price\" : " + price + ", \"URL\" : \"" + picture
-						+ "\", \"Num\"" + num + ", \"Unit\" : " + unit
+						+ "\", \"Num\" : " + num + ", \"Unit\" : \"" + unit
 						+ "\", \"Prescripted\" : " + isprescription + "}";
 				if (i != 0)
 					tmpString = "," + tmpString;
