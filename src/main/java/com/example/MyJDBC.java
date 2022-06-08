@@ -196,6 +196,11 @@ public class MyJDBC {
 		return true;
 	}
 
+	/**
+	 * 获取所有的药品id
+	 * 
+	 * @return Vector
+	 */
 	public static Vector<String> getAllMedicineID() {
 		Vector<String> allID = new Vector<String>();
 		Statement statement;
