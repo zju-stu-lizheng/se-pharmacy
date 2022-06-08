@@ -17,7 +17,6 @@ public class AppTest {
 	// @Test
 	public void testAddMedicine() {
 		MyJDBC.connectDatabase();
-		MyJDBC.doDeleteTable("medicine");
 		/* test for insert Medicine */
 		System.out.println("test for insert Medicine");
 		String id = "1";
@@ -35,9 +34,6 @@ public class AppTest {
 		effString = "2023-06-29";
 		stock = 10;
 		MyJDBC.insertMedicine(id, effString, storeString, stock);
-
-		/* test for query all */
-		// System.out.println(MyJDBC.queryMedicine());
 
 		/* test for add Medicine */
 		System.out.println("test for add Medicine");
@@ -115,9 +111,8 @@ public class AppTest {
 		MyJDBC.connectDatabase();
 
 		String branchName = "玉古路店";
-		// System.out.println(MyJDBC.queryMedicine("99999", branchName));
-		System.out.println(MyJDBC.searchMedicine("", branchName, 1));
-		// System.out.println(MyJDBC.queryMedicine(1));
+		System.out.println("测试用户端:\n" + MyJDBC.queryMedicine("99999", branchName));
+		System.out.println("测试管理员端:\n" + MyJDBC.queryMedicine(1));
 	}
 
 	@Test

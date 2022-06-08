@@ -15,16 +15,13 @@ public class MyJDBC {
 	/**
 	 * 登录数据库所需的信息:包括驱动器，数据库名称以及登录名、密码
 	 */
-
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-	// remote
+	// remote database
 	static final String DB_URL = "jdbc:mysql://124.220.171.17:3306/pharmacy?useSSL=false&serverTimezone=UTC";
 	static final String USERNAME = "Pharmacy";
-	// PC
-	// static final String DB_URL =
-	// "jdbc:mysql://localhost:3306/se?useSSL=false&serverTimezone=UTC";
-	// static final String USERNAME = "root";
 	static final String PASSWD = "lizheng";
+	// 每页的药品数量
+	static final int DRUGS_PER_PAGE = 50;
 
 	// sql
 	static Connection connection = null;
@@ -33,9 +30,6 @@ public class MyJDBC {
 
 	// 日期格式
 	static SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-
-	// 每页的药品数量
-	final static int DRUGS_PER_PAGE = 50;
 
 	// 处理字符串转义
 	static String execString(String function) {
@@ -130,70 +124,6 @@ public class MyJDBC {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * 确认管理员登录的账户密码是否正确
-	 * 
-	 * @param ano    : 账号id
-	 * @param passwd : 账号密码
-	 * @return :true of false
-	 */
-	public static boolean ensureLogin(String ano, String passwd) {
-		String pwd = null;
-		Statement statement;
-		ResultSet resultSet;
-		try {
-			// 获取执行sql语句的statement对象
-			statement = connection.createStatement();
-			// 执行sql语句,拿到结果集
-			resultSet = statement.executeQuery("SELECT password FROM administrator Where ano = \"" + ano + "\";");
-			// 遍历结果集，得到数据
-			if (resultSet.next()) {
-				pwd = resultSet.getString(1);
-			} else {
-				System.out.println("无该用户:" + ano);
-				return false;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		if (passwd.equals(pwd)) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * 插入一条管理员信息
-	 * 
-	 * @param ano         : 管理员 id
-	 * @param aname       : 管理员 昵称
-	 * @param password    : 管理员 密码
-	 * @param phonenumber : 管理员 联系方式
-	 * @return : true(插入成功)/false(插入失败)
-	 */
-	public static boolean insertAdministator(String ano, String aname, String password, String phonenumber) {
-		Statement statement;
-		try {
-			statement = connection.createStatement();
-			statement.executeUpdate("INSERT INTO administrator" + " VALUES('" + ano + "','" + aname + "','" + password
-					+ "','" + phonenumber + "');");
-			connection.commit();
-		} catch (SQLException e) {
-			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			e.printStackTrace();
-			return false;
-		}
-		return true;
 	}
 
 	/**
@@ -550,13 +480,12 @@ public class MyJDBC {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		if (numofDrugs % DRUGS_PER_PAGE == 0) {
-			numofDrugs = numofDrugs / DRUGS_PER_PAGE;
-		} else {
-			numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
+		int pages = numofDrugs / DRUGS_PER_PAGE;
+		if (numofDrugs % DRUGS_PER_PAGE != 0) {
+			pages += 1;
 		}
 
-		queryResultBuffer.append(", \"NumPages\" : " + numofDrugs + "}");
+		queryResultBuffer.append(", \"NumPages\" : " + pages + "}");
 		return queryResultBuffer.toString();
 	}
 
@@ -629,13 +558,12 @@ public class MyJDBC {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		if (numofDrugs % DRUGS_PER_PAGE == 0) {
-			numofDrugs = numofDrugs / DRUGS_PER_PAGE;
-		} else {
-			numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
+		int pages = numofDrugs / DRUGS_PER_PAGE;
+		if (numofDrugs % DRUGS_PER_PAGE != 0) {
+			pages += 1;
 		}
 
-		queryResultBuffer.append("," + numofDrugs + "]");
+		queryResultBuffer.append("," + pages + "]");
 		return queryResultBuffer.toString();
 	}
 
@@ -699,13 +627,12 @@ public class MyJDBC {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		if (numofDrugs % DRUGS_PER_PAGE == 0) {
-			numofDrugs = numofDrugs / DRUGS_PER_PAGE;
-		} else {
-			numofDrugs = numofDrugs / DRUGS_PER_PAGE + 1;
+		int pages = numofDrugs / DRUGS_PER_PAGE;
+		if (numofDrugs % DRUGS_PER_PAGE != 0) {
+			pages += 1;
 		}
 
-		queryResultBuffer.append("," + numofDrugs + "]");
+		queryResultBuffer.append("," + pages + "]");
 		return queryResultBuffer.toString();
 	}
 
@@ -1228,38 +1155,6 @@ public class MyJDBC {
 	}
 
 	/**
-	 * 获取购物车的总价
-	 * 
-	 * @param user_id       : 用户 id
-	 * @param storehouse_id : 药房 id
-	 * @return 总价:float
-	 */
-	public static float getPrice(String user_id, String storehouse_id) {
-		float sum;
-		ResultSet resultSet;
-		Statement statement;
-		try {
-			statement = connection.createStatement();
-			resultSet = statement.executeQuery(String.format(
-					"SELECT SUM(medicine.price*shoppingCart.num) FROM shoppingCart NATURAL JOIN medicine WHERE user_id ='%s' AND storehouse_id = '%s' AND shoppingCart.medicine_id=medicine.id;",
-					user_id, storehouse_id));
-			if (!resultSet.next()) {
-				return 0.0f;
-			} else {
-				if (resultSet.getString(1) != null)
-					sum = Float.valueOf(resultSet.getString(1));
-				else {
-					return 0.0f;
-				}
-			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-			return 0.0f;
-		}
-		return sum;
-	}
-
-	/**
 	 * 用户支付完账单后，增加一个排队记录
 	 * 
 	 * @param bill_id       : 账单号
@@ -1487,11 +1382,5 @@ public class MyJDBC {
 
 	public static void main(String[] args) {
 		MyJDBC.connectDatabase();
-		// System.out.println("test for insert Medicine");
-		// String id = "1";
-		// String effString = "2023-08-28";
-		// String storeString = "玉古路店";
-		// int stock = 20;
-		// MyJDBC.insertMedicine(id, effString, storeString, stock);
 	}
 }
