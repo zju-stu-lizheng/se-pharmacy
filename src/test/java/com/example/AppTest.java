@@ -260,8 +260,8 @@ public class AppTest {
 	/**
 	 * Rigorous Test :-)
 	 */
-	// @Test
-	public void shouldAnswerWithTrue() {
+	@Test
+	public void testCommitBill() {
 		String storeString = "玉古路店";
 		Manager.setWindow(5, storeString);
 		MyJDBC.connectDatabase();
@@ -269,8 +269,8 @@ public class AppTest {
 		/* test for setShoppingCart */
 		System.out.println("test for setShoppingCart");
 		try {
-			assertTrue(MyJDBC.setShoppingCart("001", "1", storeString, 2));
-			MyJDBC.commitBill("001", storeString);
+			assertTrue(MyJDBC.setShoppingCart("999", "1", storeString, 2));
+			MyJDBC.commitBill("999", storeString);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
