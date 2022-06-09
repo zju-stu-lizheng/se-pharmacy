@@ -86,10 +86,10 @@ public class AppTest {
 	public void SearchMedicine() {
 		MyJDBC.connectDatabase();
 
-		String storeString = "玉古路店";
+		String storeString = "紫金港店";
 
 		System.out.println(MyJDBC.searchMedicine("", 705));
-		System.out.println(MyJDBC.searchMedicine("", storeString, 705));
+		System.out.println(MyJDBC.searchMedicine("", storeString, 1));
 
 		// System.out.println(MyJDBC.searchMedicine("头孢拉定颗粒", storeString, 1));
 	}

@@ -426,8 +426,8 @@ public class MyJDBC {
 
 		// 先获取满足要求的药品条数
 		String sqlQueryString = String.format(
-				"select count(*) as cnt from db_drugs where name LIKE \"%s\";",
-				searchContent);
+				"select count(*) as cnt from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = \"%s\";",
+				searchContent, branchName);
 		int numofDrugs = 0;
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
