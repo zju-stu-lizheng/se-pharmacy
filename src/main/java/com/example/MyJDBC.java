@@ -254,10 +254,11 @@ public class MyJDBC {
 		try {
 			// 获取执行sql语句的statement对象
 			statement = connection.createStatement();
+
 			// 查询该药品的库存
-			resultSet = statement
-					.executeQuery("SELECT stock FROM medicine WHERE id = \"" + id + "\" and storehouse_id = \""
-							+ storehouse_id + "\" + effective_date = \"" + effective_date + "\";");
+			resultSet = statement.executeQuery(String.format(
+					"SELECT stock FROM medicine where id = '%s' and effective_date = '%s' and storehouse_id = '%s';",
+					id, effective_date, storehouse_id));
 			// 判断是否存在该药品，若不存在返回false
 			if (!resultSet.next())
 				return false;
