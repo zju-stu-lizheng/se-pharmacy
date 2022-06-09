@@ -423,7 +423,7 @@ public class MyJDBC {
 	 */
 	public static String searchMedicine(String searchContent, String branchName, int pageid) {
 		int start = (pageid - 1) * DRUGS_PER_PAGE;
-		searchContent += "%";
+		searchContent = "%" + searchContent + "%";
 
 		// 先获取满足要求的药品条数
 		String sqlQueryString = String.format(
