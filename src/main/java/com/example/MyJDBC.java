@@ -439,7 +439,7 @@ public class MyJDBC {
 		}
 
 		sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,stock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' limit %d,%d;",
+				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,stock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' order by prescription ASC limit %d,%d;",
 				searchContent, branchName, start, DRUGS_PER_PAGE);
 		StringBuffer queryResultBuffer = new StringBuffer("{\"MediList\" : [");
 		int i = 0;
@@ -456,7 +456,7 @@ public class MyJDBC {
 				String function = rs.getString("function");
 				String picture = rs.getString("picture");
 				float price = rs.getFloat("price");
-				int allStock = rs.getInt("allStock");
+				int stock = rs.getInt("stock");
 				String unit = rs.getString("unit");
 				int prescription = rs.getInt("prescription");
 				// 处理转义
@@ -467,7 +467,7 @@ public class MyJDBC {
 				tmpString = "{\"ID\" : \"" + id + "\", \"Brand\" : \"" + brand + "\", \"Name\" : \"" + name
 						+ "\", \"Description\" : \"" + function + "\", \"Usage\" : \"" + dosage
 						+ "\", \"Taboo\" : \"" + banned + "\", \"Price\" : " + price + ", \"URL\" : \"" + picture
-						+ "\", \"Num\" : " + allStock + ", \"Unit\" : \"" + unit
+						+ "\", \"Num\" : " + stock + ", \"Unit\" : \"" + unit
 						+ "\", \"Prescripted\" : " + prescription + "}";
 				if (i != 0)
 					tmpString = "," + tmpString;
@@ -489,7 +489,7 @@ public class MyJDBC {
 	}
 
 	/**
-	 * 查询指定药品id的药品记录
+	 * 查询指定内容的药品记录
 	 *
 	 * @param searchContent : 药品名字
 	 * @param pageid        : 页号:从1开始
@@ -501,7 +501,7 @@ public class MyJDBC {
 
 		// 先获取满足要求的药品条数
 		String sqlQueryString = String.format(
-				"select count(*) as cnt from db_drugs where name LIKE \"%s\";",
+				"select count(id) as cnt from medicine natural join db_drugs where name LIKE \"%s\";",
 				searchContent);
 		int numofDrugs = 0;
 		try (Statement stmt = connection.createStatement()) {
@@ -515,7 +515,7 @@ public class MyJDBC {
 
 		// 只返回非处方药
 		sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\"  group by name,brand limit %d,%d;",
+				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,stock as allStock from medicine natural join db_drugs where name LIKE \"%s\" order by prescription ASC  limit %d,%d;",
 				searchContent, start, DRUGS_PER_PAGE);
 		StringBuffer queryResultBuffer = new StringBuffer("[[");
 		int i = 0;
@@ -588,7 +588,7 @@ public class MyJDBC {
 		}
 
 		sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,picture,sum(stock) as allStock from medicine natural join db_drugs group by name,brand limit %d,%d;",
+				"select id,name,brand,`function`,dosage,banned,price,picture,stock as allStock from medicine natural join db_drugs limit %d,%d;",
 				start, DRUGS_PER_PAGE);
 		StringBuffer queryResultBuffer = new StringBuffer("[[");
 		int i = 0;
