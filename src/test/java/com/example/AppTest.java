@@ -89,7 +89,7 @@ public class AppTest {
 		String storeString = "紫金港店";
 
 		System.out.println(MyJDBC.searchMedicine("", 705));
-		System.out.println(MyJDBC.searchMedicine("", storeString, 1));
+		// System.out.println(MyJDBC.searchMedicine("", storeString, 1));
 
 		// System.out.println(MyJDBC.searchMedicine("头孢拉定颗粒", storeString, 1));
 	}
