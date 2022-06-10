@@ -73,10 +73,10 @@ public class AppTest {
 	public void addAllMedicine() {
 		MyJDBC.connectDatabase();
 		Vector<String> allID = MyJDBC.getAllMedicineID();
-		String effString = "2023-09-28";
-		String storeString = "紫金港店";
-		for (int i = allID.size() / 3 * 2; i < allID.size(); i++) {
-			int stock = 100 + (int) Math.round(Math.random() * 20);
+		String effString = "2024-09-28";
+		String storeString = "玉古路店";
+		for (int i = allID.size() / 2; i < allID.size() / 3 * 2; i++) {
+			int stock = 110 + (int) Math.round(Math.random() * 20);
 			String each = allID.get(i);
 			MyJDBC.insertMedicine(each, effString, storeString, stock);
 		}
