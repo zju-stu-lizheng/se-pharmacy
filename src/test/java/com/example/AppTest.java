@@ -69,13 +69,13 @@ public class AppTest {
 
 	}
 
-	// @Test
+	@Test
 	public void addAllMedicine() {
 		MyJDBC.connectDatabase();
 		Vector<String> allID = MyJDBC.getAllMedicineID();
-		String effString = "2023-06-28";
-		String storeString = "玉古路店";
-		for (int i = 0; i < allID.size(); i++) {
+		String effString = "2023-09-28";
+		String storeString = "紫金港店";
+		for (int i = allID.size() / 3 * 2; i < allID.size(); i++) {
 			int stock = 100 + (int) Math.round(Math.random() * 20);
 			String each = allID.get(i);
 			MyJDBC.insertMedicine(each, effString, storeString, stock);
@@ -86,9 +86,9 @@ public class AppTest {
 	public void SearchMedicine() {
 		MyJDBC.connectDatabase();
 
-		String storeString = "紫金港店";
+		String storeString = "玉古路店";
 
-		System.out.println(MyJDBC.searchMedicine("", 705));
+		System.out.println(MyJDBC.searchMedicine("", 360));
 		// System.out.println(MyJDBC.searchMedicine("", storeString, 1));
 
 		// System.out.println(MyJDBC.searchMedicine("头孢拉定颗粒", storeString, 1));

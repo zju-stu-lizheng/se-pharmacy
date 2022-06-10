@@ -424,12 +424,13 @@ public class MyJDBC {
 	public static String searchMedicine(String searchContent, String branchName, int pageid) {
 		int start = (pageid - 1) * DRUGS_PER_PAGE;
 		searchContent = "%" + searchContent + "%";
+		int numofDrugs = 0;
 
 		// 先获取满足要求的药品条数
 		String sqlQueryString = String.format(
-				"select count(*) as cnt from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = \"%s\";",
+				"select count(distinct id) as cnt from medicine natural join db_drugs where name LIKE\"%s\" and storehouse_id = \"%s\";",
 				searchContent, branchName);
-		int numofDrugs = 0;
+
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
 			if (rs.next()) {
@@ -440,7 +441,7 @@ public class MyJDBC {
 		}
 
 		sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,stock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' order by prescription ASC limit %d,%d;",
+				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,stock from medicine natural join db_drugs where name LIKE \"%s\" and storehouse_id = '%s' group by id order by prescription ASC limit %d,%d;",
 				searchContent, branchName, start, DRUGS_PER_PAGE);
 		StringBuffer queryResultBuffer = new StringBuffer("{\"MediList\" : [");
 		int i = 0;
@@ -498,27 +499,24 @@ public class MyJDBC {
 	 */
 	public static String searchMedicine(String searchContent, int pageid) {
 		int start = (pageid - 1) * DRUGS_PER_PAGE;
-		searchContent += "%";
+		searchContent = "%" + searchContent + "%";
 		int numofDrugs = 0;
-
 		// 先获取满足要求的药品条数
-		// String sqlQueryString = String.format(
-		// "select count(id) as cnt from medicine natural join db_drugs where name LIKE
-		// \"%s\";",
-		// searchContent);
-		//
-		// try (Statement stmt = connection.createStatement()) {
-		// ResultSet rs = stmt.executeQuery(sqlQueryString);
-		// if (rs.next()) {
-		// numofDrugs = rs.getInt("cnt");
-		// }
-		// } catch (SQLException e) {
-		// e.printStackTrace();
-		// }
-
-		// 只返回非处方药
 		String sqlQueryString = String.format(
-				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" group by id order by prescription ASC;",
+				"select count(distinct id) as cnt from medicine natural join db_drugs where name LIKE\"%s\" ;",
+				searchContent);
+
+		try (Statement stmt = connection.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sqlQueryString);
+			if (rs.next()) {
+				numofDrugs = rs.getInt("cnt");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		// 只返回非处方药
+		sqlQueryString = String.format(
+				"select id,name,brand,`function`,dosage,banned,price,unit,prescription,picture,sum(stock) as allStock from medicine natural join db_drugs where name LIKE \"%s\" group by id order by prescription ASC limit %d,%d;",
 				searchContent, start, DRUGS_PER_PAGE);
 		StringBuffer queryResultBuffer = new StringBuffer("[[");
 		int i = 0;
@@ -526,12 +524,6 @@ public class MyJDBC {
 		try (Statement stmt = connection.createStatement()) {
 			ResultSet rs = stmt.executeQuery(sqlQueryString);
 			while (rs.next()) {
-				if (i < start || i >= start + DRUGS_PER_PAGE) { // 不属于搜索返回，不返回该条信息
-					numofDrugs++;
-					continue;
-				}
-				numofDrugs++;// 药品数增加
-
 				/* 根据 属性获取该条记录相应的值 */
 				String id = rs.getString("id");
 				String brand = rs.getString("brand");
