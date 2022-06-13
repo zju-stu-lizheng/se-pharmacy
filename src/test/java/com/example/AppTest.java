@@ -88,8 +88,8 @@ public class AppTest {
 
 		String storeString = "玉古路店";
 
-		System.out.println(MyJDBC.searchMedicine("", 360));
-		// System.out.println(MyJDBC.searchMedicine("", storeString, 1));
+		System.out.println("管理员端:\n" + MyJDBC.searchMedicine("", 360));
+		System.out.println("用户端:\n" + MyJDBC.searchMedicine("", storeString, 1));
 
 		// System.out.println(MyJDBC.searchMedicine("头孢拉定颗粒", storeString, 1));
 	}
@@ -113,7 +113,7 @@ public class AppTest {
 		MyJDBC.connectDatabase();
 
 		String branchName = "玉古路店";
-		// System.out.println("测试用户端:\n" + MyJDBC.queryMedicine("99999", branchName));
+		System.out.println("测试用户端:\n" + MyJDBC.queryMedicine("1", branchName));
 		System.out.println("测试管理员端:\n" + MyJDBC.queryMedicine(705));
 	}
 
@@ -129,18 +129,19 @@ public class AppTest {
 		System.out.println(MyJDBC.queryMedicine(1));
 	}
 
-	// @Test
+	@Test
+	public void testForInsertAdm() {
+		// 测试插入管理员信息
+		MyJDBC.connectDatabase();
+		MyJDBC.insertAdministator("888", "yjj", "yjj", "88888888");
+	}
+
+	@Test
 	public void testForShoppingCart() {
 		System.out.println("Welcome to App!");
 		MyJDBC.connectDatabase();
 
 		String storeString = "玉古路店";
-		Manager.setWindow(5, storeString);
-
-		MyJDBC.doDeleteTable("shoppingCart");
-		MyJDBC.doDeleteTable("SE_window");
-		MyJDBC.doDeleteTable("SE_Queue");
-		MyJDBC.doDeleteTable("bill");
 
 		/* test for setShoppingCart */
 		System.out.println("test for setShoppingCart");
@@ -151,62 +152,6 @@ public class AppTest {
 		}
 
 		System.out.println(MyJDBC.getShoppingCart("001", storeString));
-
-		// System.out.println("test for setShoppingCart to 0");
-		// try {
-		// assertTrue(MyJDBC.setShoppingCart("001", "001", storeString, 0));
-		// } catch (SQLException e) {
-		// e.printStackTrace();
-		// }
-
-		// System.out.println(MyJDBC.getShoppingCart("001", storeString));
-
-		/* test for addShoppingCart */
-		// System.out.println("test for addshoppingCart");
-		// try {
-		// assertTrue(MyJDBC.addShoppingCart("002", "002", storeString, 3));
-		// } catch (SQLException e) {
-		// e.printStackTrace();
-		// }
-		//
-		// System.out.println(MyJDBC.getShoppingCart("002", storeString));
-
-		System.out.println("test for setShoppingCart 2");
-		try {
-			assertTrue(MyJDBC.setShoppingCart("001", "2", storeString, 4));
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println(MyJDBC.getShoppingCart("001", storeString));
-
-		/* test for deleteShoppingCart */
-		// System.out.println("test for deleteShoppingCart");
-		// try {
-		// MyJDBC.deleteShoppingCart("001", "002", storeString, 4);
-		// } catch (SQLException e) {
-		// e.printStackTrace();
-		// }
-
-		// System.out.println(MyJDBC.queryShoppingCart("001", storeString));
-
-		// System.out.println("Total Price for 1 is " + MyJDBC.getPrice("001",
-		// storeString));
-		// System.out.println("Total Price for 2 is " + MyJDBC.getPrice("001",
-		// storeString));
-
-		// try {
-		// System.out.println("buy medicine!");
-		// MyJDBC.buyMedicine("001", storeString);
-		// } catch (SQLException e) {
-		// e.printStackTrace();
-		// }
-
-		System.out.println("query all branch!");
-		System.out.println(MyJDBC.getAllBranch());
-
-		/* test for query all */
-		System.out.println(MyJDBC.queryMedicine("布", storeString));
 
 		try {
 			MyJDBC.commitBill("001", storeString);
